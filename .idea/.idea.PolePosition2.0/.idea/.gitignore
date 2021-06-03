@@ -1,0 +1,13 @@
+﻿# Default ignored files
+/shelf/
+/workspace.xml
+# Rider ignored files
+/modules.xml
+/contentModel.xml
+/projectSettingsUpdater.xml
+/.idea.PolePosition2.0.iml
+# Datasource local storage ignored files
+/../../../../../../../../:\Users\Julio Guillen\Desktop\PolePosition2.0\.idea\.idea.PolePosition2.0\.idea/dataSources/
+/dataSources.local.xml
+# Editor-based HTTP Client requests
+/httpRequests/
