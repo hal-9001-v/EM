@@ -37,7 +37,6 @@ public class PolePositionManager : MonoBehaviour
 
     }
 
-
     public void AddPlayer(PlayerInfo player)
     {
         _players.Add(player);
