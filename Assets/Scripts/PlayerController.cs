@@ -10,6 +10,9 @@ using Mirror;
 
 public class PlayerController : NetworkBehaviour
 {
+    [SyncVar] private int _startCollider = 0;
+
+
     #region Variables
     [Header("Movement")] public List<AxleInfo> axleInfos;
     public float forwardMotorTorque = 100000;
@@ -280,4 +283,41 @@ public class PlayerController : NetworkBehaviour
         }
 
         #endregion
+
+        public int  GetEnd(){
+
+            return _startCollider;
+
+        }
+        
+        private void OnTriggerEnter(Collider other) {
+            if(other.tag == "ControlCollider" && int.Parse(other.name) == m_PlayerInfo.NextCollider) {
+                
+                    if(m_PlayerInfo.NextCollider == GetEnd()){
+
+                    m_PlayerInfo.CurrentLap++;
+                    Debug.Log("Current Lap = " + m_PlayerInfo.CurrentLap);
+
+                    }
+                LineRenderer _circuitPath = FindObjectOfType<LineRenderer>();
+               int num = CircuitController.GetColliderNumber(_circuitPath.positionCount);
+               
+                if(m_PlayerInfo.NextCollider == (num-1))
+                {
+                    
+                    m_PlayerInfo.NextCollider = 0;
+                    
+                } else m_PlayerInfo.NextCollider = int.Parse(other.name) +1;
+
+                
+                Debug.Log("Next Collider = " + m_PlayerInfo.NextCollider);
+                
+                
+
+              
+
+                
+
+            }            
+        }
     }

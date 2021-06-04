@@ -16,7 +16,7 @@ public class PolePositionManager : NetworkBehaviour
     private List<PlayerInfo> _players = new List<PlayerInfo>();
     private CircuitController _circuitController;
     private GameObject[] _debuggingSpheres;
-
+    
     private void Awake()
     {
         if (_networkManager == null) _networkManager = FindObjectOfType<MyNetworkManager>();

@@ -1109,7 +1109,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.7075472, g: 0.7075472, b: 0.7075472, a: 1}
   m_RaycastTarget: 1
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -1733,7 +1733,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.17706649, g: 0.7921569, b: 0.14509802, a: 1}
+  m_Color: {r: 0.3019608, g: 0.56078434, b: 0.43137255, a: 1}
   m_RaycastTarget: 1
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -2873,6 +2873,7 @@ MonoBehaviour:
   textSpeed: {fileID: 5240730514382615282}
   textLaps: {fileID: 7877127320461906900}
   textPosition: {fileID: 5510653439194531046}
+  myChangingPlayer: {fileID: 0}
 --- !u!1 &6415909394048335348
 GameObject:
   m_ObjectHideFlags: 0
@@ -4118,7 +4119,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.7921569, g: 0.14509805, b: 0.14901961, a: 1}
+  m_Color: {r: 0.9098039, g: 0.33333334, b: 0.3254902, a: 1}
   m_RaycastTarget: 1
   m_Maskable: 1
   m_OnCullStateChanged:
