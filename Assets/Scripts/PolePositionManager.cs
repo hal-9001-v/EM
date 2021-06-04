@@ -8,9 +8,12 @@ using UnityEngine;
 public class PolePositionManager : NetworkBehaviour
 {
     public int numPlayers;
+    
+
+    const int MaxPlayers = 4;
     private MyNetworkManager _networkManager;
 
-    private readonly List<PlayerInfo> _players = new List<PlayerInfo>(4);
+    private List<PlayerInfo> _players = new List<PlayerInfo>();
     private CircuitController _circuitController;
     private GameObject[] _debuggingSpheres;
 
@@ -29,12 +32,15 @@ public class PolePositionManager : NetworkBehaviour
 
     private void Update()
     {
+        /*
         if (_players.Count == 0)
             return;
 
         UpdateRaceProgress();
+        */
     }
 
+    [Server]
     public void AddPlayer(PlayerInfo player)
     {
         _players.Add(player);
@@ -57,16 +63,17 @@ public class PolePositionManager : NetworkBehaviour
         }
     }
 
-    public void UpdateRaceProgress()
+    public string GetRaceProgress()
     {
         // Update car arc-lengths
-        float[] arcLengths = new float[_players.Count];
-
+        float[] arcLengths = new float[MaxPlayers];
+        
+ 
         for (int i = 0; i < _players.Count; ++i)
         {
             arcLengths[i] = ComputeCarArcLength(i);
         }
-        
+
         _players.Sort(new PlayerInfoComparer(arcLengths));
 
         string myRaceOrder = "";
@@ -75,7 +82,7 @@ public class PolePositionManager : NetworkBehaviour
             myRaceOrder += player.Name + " ";
         }
 
-        Debug.Log("El orden de carrera es: " + myRaceOrder);
+        return myRaceOrder;
     }
 
     float ComputeCarArcLength(int id)
