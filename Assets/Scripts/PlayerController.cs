@@ -11,7 +11,6 @@ using Mirror;
 public class PlayerController : NetworkBehaviour
 {
     #region Variables
-
     [Header("Movement")] public List<AxleInfo> axleInfos;
     public float forwardMotorTorque = 100000;
     public float backwardMotorTorque = 50000;
@@ -25,7 +24,9 @@ public class PlayerController : NetworkBehaviour
     private float CurrentRotation { get; set; }
     private float InputAcceleration { get; set; }
     private float InputSteering { get; set; }
-    private float InputBrake { get; set; }
+    private bool InputBrake { get; set; }
+
+    BasicPlayer _input;
 
     private PlayerInfo m_PlayerInfo;
 
@@ -59,22 +60,50 @@ public class PlayerController : NetworkBehaviour
     {
         m_Rigidbody = GetComponent<Rigidbody>();
         m_PlayerInfo = GetComponent<PlayerInfo>();
+
+
+    }
+
+    public void Start()
+    {
+        InitializeInput();
+    }
+
+    [ClientRpc]
+    void InitializeInput() {
+
+        _input = new BasicPlayer();
+
+        _input.PC.Move.performed += ctx => {
+
+            Vector3 rawInput = ctx.ReadValue<Vector2>();
+
+
+            InputSteering = rawInput.x;
+            InputAcceleration = rawInput.y;
+        };
+
+        _input.PC.Brake.performed += ctx =>{
+            InputBrake = true;
+        
+        };
+
+        _input.PC.Brake.canceled += ctx => {
+            InputBrake = false;
+
+        };
+
+        _input.Enable();
+
     }
 
     public void Update()
     {
-        InputAcceleration = Input.GetAxis("Vertical");
-        InputSteering = Input.GetAxis(("Horizontal"));
-        InputBrake = Input.GetAxis("Jump");
         Speed = m_Rigidbody.velocity.magnitude;
     }
 
     public void FixedUpdate()
     {
-        InputSteering = Mathf.Clamp(InputSteering, -1, 1);
-        InputAcceleration = Mathf.Clamp(InputAcceleration, -1, 1);
-        InputBrake = Mathf.Clamp(InputBrake, 0, 1);
-
         float steering = maxSteeringAngle * InputSteering;
 
         foreach (AxleInfo axleInfo in axleInfos)
@@ -111,7 +140,7 @@ public class PlayerController : NetworkBehaviour
                     axleInfo.rightWheel.brakeTorque = engineBrake;
                 }
 
-                if (InputBrake > 0)
+                if (InputBrake)
                 {
                     axleInfo.leftWheel.brakeTorque = footBrake;
                     axleInfo.rightWheel.brakeTorque = footBrake;
