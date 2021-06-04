@@ -16,7 +16,7 @@ public class SetupPlayer : NetworkBehaviour
 
     [SyncVar (hook = nameof(HandleDisplayColorUpdated))] private Color _carColor = Color.blue;
     
-
+    
     
 
     private UIManager _uiManager;
@@ -62,6 +62,7 @@ public class SetupPlayer : NetworkBehaviour
     public override void OnStartLocalPlayer()
     {
         CmdSetDisplayName(_playerInfo.Name);
+        
     }
 
     #endregion
@@ -82,6 +83,7 @@ public class SetupPlayer : NetworkBehaviour
         {
             _playerController.enabled = true;
             _playerController.OnSpeedChangeEvent += OnSpeedChangeEventHandler;
+            _uiManager.myChangingPlayer = this;
             ConfigureCamera();
         }
     }
@@ -107,8 +109,9 @@ public class SetupPlayer : NetworkBehaviour
        [Server]
     public void SetDisplayName(string newName)
     {
-        // Control de validez del nombre
-        _name = newName;
+        int aux = _id + 1;
+        if(newName.Length < 2) _name = "Player " +aux;
+        else _name = newName;
     }
 
     [Server]
