@@ -44,7 +44,9 @@ public class UIManager : MonoBehaviour
     private void Awake()
     {
         m_NetworkManager = FindObjectOfType<MyNetworkManager>();
-        
+        _name.placeholder.color =  red.GetComponent<Image>().color;
+        _name.textComponent.color= red.GetComponent<Image>().color;
+
     }
 
     private void Start()
@@ -53,12 +55,12 @@ public class UIManager : MonoBehaviour
         buttonClient.onClick.AddListener(() => StartClient());
         buttonServer.onClick.AddListener(() => StartServer());
         ready.onClick.AddListener(() => Ready());
-        blue.onClick.AddListener(() => setColor(Color.blue));
-        green.onClick.AddListener(() => setColor(Color.green));
-        red.onClick.AddListener(() => setColor(Color.red));
-        black.onClick.AddListener(() => setColor(Color.black));
-        white.onClick.AddListener(() => setColor(Color.gray));
-        yellow.onClick.AddListener(() => setColor(Color.yellow));
+        blue.onClick.AddListener(() => setColor(blue.GetComponent<Image>().color));
+        green.onClick.AddListener(() => setColor(green.GetComponent<Image>().color));
+        red.onClick.AddListener(() => setColor(red.GetComponent<Image>().color));
+        black.onClick.AddListener(() => setColor(black.GetComponent<Image>().color));
+        white.onClick.AddListener(() => setColor(white.GetComponent<Image>().color));
+        yellow.onClick.AddListener(() => setColor(yellow.GetComponent<Image>().color));
         ActivateMainMenu();
     }
 
