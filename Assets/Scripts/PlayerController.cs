@@ -14,16 +14,16 @@ public class PlayerController : NetworkBehaviour
     [Header("Movement")] public List<AxleInfo> axleInfos;
     public float forwardMotorTorque = 100000;
     public float backwardMotorTorque = 50000;
-    public float maxSteeringAngle = 15;
+    public const float maxSteeringAngle = 15;
     public float engineBrake = 1e+12f;
     public float footBrake = 1e+24f;
     public float topSpeed = 200f;
     public float downForce = 100f;
     public float slipLimit = 0.2f;
     private float CurrentRotation { get; set; }
-    private float InputAcceleration { get; set; }
-    private float InputSteering { get; set; }
-    private bool InputBrake { get; set; }
+    private float _inputAcceleration { get; set; }
+    private float _inputSteering { get; set; }
+    private bool _inputBrake { get; set; }
 
     BasicPlayer _input;
 
@@ -60,34 +60,38 @@ public class PlayerController : NetworkBehaviour
         m_Rigidbody = GetComponent<Rigidbody>();
         m_PlayerInfo = GetComponent<PlayerInfo>();
 
-        
+
     }
 
     public void Start()
     {
-        if(isLocalPlayer) InitializeInput();
+        if (isLocalPlayer) InitializeInput();
+
     }
 
-
-    void InitializeInput() {
+    void InitializeInput()
+    {
         Debug.Log("Hola!");
         _input = new BasicPlayer();
 
-        _input.PC.Move.performed += ctx => {
+        _input.PC.Move.performed += ctx =>
+        {
 
             Vector3 rawInput = ctx.ReadValue<Vector2>();
 
-            InputSteering = rawInput.x;
-            InputAcceleration = rawInput.y;
+            _inputSteering = rawInput.x;
+            _inputAcceleration = rawInput.y;
         };
 
-        _input.PC.Brake.performed += ctx =>{
-            InputBrake = true;
-        
+        _input.PC.Brake.performed += ctx =>
+        {
+            _inputBrake = true;
+
         };
 
-        _input.PC.Brake.canceled += ctx => {
-            InputBrake = false;
+        _input.PC.Brake.canceled += ctx =>
+        {
+            _inputBrake = false;
 
         };
 
@@ -101,11 +105,9 @@ public class PlayerController : NetworkBehaviour
         Speed = m_Rigidbody.velocity.magnitude;
     }
 
-    public void FixedUpdate()
+    void ApplyMovement(float inputSteering, float inputAcceleration, bool inputBrake)
     {
-
-    float steering = maxSteeringAngle * InputSteering;
-        
+        float steering = maxSteeringAngle * inputSteering;
 
         foreach (AxleInfo axleInfo in axleInfos)
         {
@@ -117,7 +119,7 @@ public class PlayerController : NetworkBehaviour
 
             if (axleInfo.motor)
             {
-                if (InputAcceleration > float.Epsilon)
+                if (inputAcceleration > float.Epsilon)
                 {
                     axleInfo.leftWheel.motorTorque = forwardMotorTorque;
                     axleInfo.leftWheel.brakeTorque = 0;
@@ -125,7 +127,7 @@ public class PlayerController : NetworkBehaviour
                     axleInfo.rightWheel.brakeTorque = 0;
                 }
 
-                if (InputAcceleration < -float.Epsilon)
+                if (inputAcceleration < -float.Epsilon)
                 {
                     axleInfo.leftWheel.motorTorque = -backwardMotorTorque;
                     axleInfo.leftWheel.brakeTorque = 0;
@@ -133,7 +135,7 @@ public class PlayerController : NetworkBehaviour
                     axleInfo.rightWheel.brakeTorque = 0;
                 }
 
-                if (Math.Abs(InputAcceleration) < float.Epsilon)
+                if (Math.Abs(inputAcceleration) < float.Epsilon)
                 {
                     axleInfo.leftWheel.motorTorque = 0;
                     axleInfo.leftWheel.brakeTorque = engineBrake;
@@ -141,7 +143,7 @@ public class PlayerController : NetworkBehaviour
                     axleInfo.rightWheel.brakeTorque = engineBrake;
                 }
 
-                if (InputBrake)
+                if (inputBrake)
                 {
                     axleInfo.leftWheel.brakeTorque = footBrake;
                     axleInfo.rightWheel.brakeTorque = footBrake;
@@ -156,7 +158,28 @@ public class PlayerController : NetworkBehaviour
         SpeedLimiter();
         AddDownForce();
         TractionControl();
-      
+
+    }
+
+    [Command]
+    void CmdApplyMovement(float steering, float acceleration, bool brake)
+    {
+        ApplyMovement(steering, acceleration, brake);
+    }
+
+    [Client]
+    void ClientApplyMovement()
+    {
+        ApplyMovement(_inputSteering, _inputAcceleration, _inputBrake);
+
+    }
+
+    public void FixedUpdate()
+    {
+        CmdApplyMovement(_inputSteering, _inputAcceleration, _inputBrake);
+        ClientApplyMovement();
+
+
     }
 
     #region Rpcs
@@ -170,7 +193,7 @@ public class PlayerController : NetworkBehaviour
 
     #endregion
 
-    
+
 
     #endregion
 
@@ -200,7 +223,7 @@ public class PlayerController : NetworkBehaviour
         }
     }
 
-// this is used to add more grip in relation to speed
+    // this is used to add more grip in relation to speed
     private void AddDownForce()
     {
         foreach (var axleInfo in axleInfos)
@@ -217,8 +240,8 @@ public class PlayerController : NetworkBehaviour
             m_Rigidbody.velocity = topSpeed * m_Rigidbody.velocity.normalized;
     }
 
-// finds the corresponding visual wheel
-// correctly applies the transform
+    // finds the corresponding visual wheel
+    // correctly applies the transform
     public void ApplyLocalPositionToVisuals(WheelCollider col)
     {
         if (col.transform.childCount == 0)
@@ -249,7 +272,7 @@ public class PlayerController : NetworkBehaviour
             }
         }
 
-// this if is needed to avoid gimbal lock problems that will make the car suddenly shift direction
+        // this if is needed to avoid gimbal lock problems that will make the car suddenly shift direction
         if (Mathf.Abs(CurrentRotation - transform.eulerAngles.y) < 10f)
         {
             var turnAdjust = (transform.eulerAngles.y - CurrentRotation) * m_SteerHelper;

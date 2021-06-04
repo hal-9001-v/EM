@@ -15,12 +15,15 @@ public class CameraController : MonoBehaviour
 
     private Vector3 m_Direction = Vector3.zero;
 
+    private Vector3 previousLookAt;
     private Camera mainCamera;
 
     // Start is called before the first frame update
     void Start()
     {
         mainCamera = this.GetComponent<Camera>();
+
+        previousLookAt = mainCamera.transform.forward;
     }
 
     // Update is called once per frame
@@ -57,7 +60,9 @@ public class CameraController : MonoBehaviour
             {
                 mainCamera.transform.position = m_Focus.transform.position + m_offset;
                 mainCamera.transform.LookAt(m_Focus.transform.position);
+
             }
         }
     }
+
 }
