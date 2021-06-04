@@ -40,7 +40,6 @@ public class PolePositionManager : NetworkBehaviour
         */
     }
 
-    [Server]
     public void AddPlayer(PlayerInfo player)
     {
         _players.Add(player);
