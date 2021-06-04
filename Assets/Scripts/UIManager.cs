@@ -39,13 +39,23 @@ public class UIManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI textPosition;
 
     public SetupPlayer myChangingPlayer;
+    [SerializeField] private PolePositionManager _manager;
 
 
     private void Awake()
     {
         m_NetworkManager = FindObjectOfType<MyNetworkManager>();
-        
+        _manager = FindObjectOfType<PolePositionManager>();
+
     }
+
+    private void Update()
+    {
+        textPosition.text = _manager.GetRaceProgress();
+
+    }
+
+
 
     private void Start()
     {
