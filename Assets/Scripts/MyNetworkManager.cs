@@ -34,6 +34,7 @@ public class MyNetworkManager : NetworkManager
         Debug.Log("[SERVER] Se ha conectado: " + player.GetDisplayName());
     }
 
+   
 
 
       

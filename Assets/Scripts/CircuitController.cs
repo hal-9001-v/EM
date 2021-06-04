@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using Mirror;
 public class CircuitController : MonoBehaviour
 {
     private LineRenderer _circuitPath;
@@ -23,6 +23,7 @@ public class CircuitController : MonoBehaviour
         _cumArcLength = new float[numPoints];
         _circuitPath.GetPositions(_pathPos);
 
+        int colliderNum = GetColliderNumber(numPoints);
         // Compute circuit arc-length
         _cumArcLength[0] = 0;
 
@@ -33,11 +34,50 @@ public class CircuitController : MonoBehaviour
         }
 
         _totalLength = _cumArcLength[_cumArcLength.Length - 1];
+
+        Vector3[] collliderPos = new Vector3[colliderNum];
+        int j = 0;
+        for (int i = 0; i < numPoints; i += colliderNum){
+
+            collliderPos[j] = _pathPos[i];
+            j++;
+
+        }
+        SpawnColliders(collliderPos, colliderNum);
+    }
+
+    public GameObject[] SpawnColliders(Vector3[] pos, int num){
+
+        GameObject[] colliders = new GameObject[num];
+
+        for (int i = 0; i < num; i++){
+
+            colliders[i] = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            colliders[i].transform.position = pos[i];
+            colliders[i].transform.rotation= new Quaternion(0,0,0,0);
+            colliders[i].transform.localScale = new Vector3(25,5,25);
+            colliders[i].GetComponent<Collider>().isTrigger = true;
+            colliders[i].GetComponent<MeshRenderer>().enabled = false;
+            colliders[i].gameObject.name = i.ToString(); 
+            colliders[i].gameObject.tag = "ControlCollider";
+            
+        }
+
+        return colliders;
+
+
     }
 
     public Vector3 GetSegment(int idx)
     {
         return _pathPos[idx + 1] - _pathPos[idx];
+    }
+
+
+    public static int GetColliderNumber(int numPoints){
+
+        return (int) numPoints/5;
+
     }
 
     public float ComputeClosestPointArcLength(Vector3 posIn, out int segIdx, out Vector3 posProjOut, out float distOut)

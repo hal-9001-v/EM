@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Vehicle
   - Puppet
+  - ControlCollider
   layers:
   - Default
   - TransparentFX

@@ -14,6 +14,9 @@ public class PlayerInfo : MonoBehaviour
     public int CurrentLap { get; set; }
 
     public Color CurrentColor {get;set;}
+    public int  NextCollider {get;set;}
+
+
 
     public override string ToString()
     {
