@@ -520,14 +520,14 @@ MonoBehaviour:
   PersistNetworkManagerToOfflineScene: 0
   runInBackground: 1
   autoStartServerBuild: 1
-  serverTickRate: 30
+  serverTickRate: 60
   serverBatching: 1
   serverBatchInterval: 0
   offlineScene: 
   onlineScene: 
   transport: {fileID: 2140735090}
   networkAddress: localhost
-  maxConnections: 100
+  maxConnections: 10
   disconnectInactiveConnections: 0
   disconnectInactiveTimeout: 60
   authenticator: {fileID: 0}

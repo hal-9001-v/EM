@@ -421,7 +421,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   syncMode: 0
-  syncInterval: 0.1
+  syncInterval: 0.05
   target: {fileID: 8225447335114324579}
   lerpVelocityAmount: 0.5
   lerpPositionAmount: 0.5

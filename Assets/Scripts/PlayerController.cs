@@ -70,7 +70,6 @@ public class PlayerController : NetworkBehaviour
 
 
     void InitializeInput() {
-        Debug.Log("Hola!");
         _input = new BasicPlayer();
 
         _input.PC.Move.performed += ctx => {

@@ -48,7 +48,8 @@ public class SetupPlayer : NetworkBehaviour
     {
         base.OnStartClient();
         _playerInfo.ID = _id;
-        _playerInfo.Name = _name + " " + _id;
+        int aux = _id+1;
+        _playerInfo.Name = "Player " + aux;
         _playerInfo.CurrentColor = _carColor;
         _playerInfo.CurrentLap = 0;
         _polePositionManager.AddPlayer(_playerInfo);
@@ -60,6 +61,7 @@ public class SetupPlayer : NetworkBehaviour
     /// </summary>
     public override void OnStartLocalPlayer()
     {
+        CmdSetDisplayName(_playerInfo.Name);
     }
 
     #endregion
