@@ -1,6 +1,7 @@
 ﻿using System;
 using Mirror;
 using UnityEngine;
+using TMPro;
 using Random = System.Random;
 
 /*
@@ -11,11 +12,18 @@ using Random = System.Random;
 public class SetupPlayer : NetworkBehaviour
 {
     [SyncVar] private int _id;
-    [SyncVar] private string _name;
+    [SyncVar (hook = nameof(HandleDisplayNameUpdated))] private string _name;
+
+    [SyncVar (hook = nameof(HandleDisplayColorUpdated))] private Color _carColor = Color.blue;
+    
+
+    
 
     private UIManager _uiManager;
     private MyNetworkManager _networkManager;
     private PlayerController _playerController;
+    [SerializeField] private MeshRenderer _meshRenderer;
+    [SerializeField] private TextMeshProUGUI _nameText;
     private PlayerInfo _playerInfo;
     private PolePositionManager _polePositionManager;
 
@@ -40,7 +48,8 @@ public class SetupPlayer : NetworkBehaviour
     {
         base.OnStartClient();
         _playerInfo.ID = _id;
-        _playerInfo.Name = "Player" + _id;
+        _playerInfo.Name = _name + " " + _id;
+        _playerInfo.CurrentColor = _carColor;
         _playerInfo.CurrentLap = 0;
         _polePositionManager.AddPlayer(_playerInfo);
     }
@@ -74,7 +83,62 @@ public class SetupPlayer : NetworkBehaviour
             ConfigureCamera();
         }
     }
+    
 
+    #region syncvar handling
+    void HandleDisplayColorUpdated(Color oldColor, Color newColor){
+
+        Debug.Log("Color Cambiado");
+        _meshRenderer.materials[1].color = newColor;
+
+    }
+
+    void HandleDisplayNameUpdated(string oldName, string newName){
+
+        Debug.Log("Nombre cambiado de " + oldName + " a " + newName);
+        _nameText.text = newName;
+
+
+    }
+
+
+       [Server]
+    public void SetDisplayName(string newName)
+    {
+        // Control de validez del nombre
+        _name = newName;
+    }
+
+    [Server]
+    public void SetDisplayColor(Color newColor)
+    {
+        _carColor = newColor;
+    }
+
+    public string GetDisplayName()
+    {
+        return _name;
+    }
+
+       public Color GetDisplayColor()
+    {
+        return _carColor;
+    }
+
+
+    [Command]
+    public void CmdSetDisplayName(string newName)
+    {
+        SetDisplayName(newName);
+    }
+
+    [Command]
+    public void CmdSetColor(Color newColor)
+    {
+        SetDisplayColor(newColor);
+    }
+
+    #endregion
     void OnSpeedChangeEventHandler(float speed)
     {
         _uiManager.UpdateSpeed((int) speed * 5); // 5 for visualization purpose (km/h)
@@ -84,4 +148,22 @@ public class SetupPlayer : NetworkBehaviour
     {
         if (Camera.main != null) Camera.main.gameObject.GetComponent<CameraController>().m_Focus = this.gameObject;
     }
+
+
+ #region Test
+
+    [ContextMenu("Cambiar nombre a dexaxi")]
+    private void SetName()
+    {
+        CmdSetDisplayName("dexaxi");
+    }
+    
+
+    [ContextMenu("Cambiar Color a Verde")]
+    private void SetColor()
+    {
+        CmdSetColor(Color.green);
+    }
+    
+    #endregion
 }

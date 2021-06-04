@@ -20,7 +20,6 @@ public class PlayerController : NetworkBehaviour
     public float topSpeed = 200f;
     public float downForce = 100f;
     public float slipLimit = 0.2f;
-
     private float CurrentRotation { get; set; }
     private float InputAcceleration { get; set; }
     private float InputSteering { get; set; }
@@ -61,23 +60,22 @@ public class PlayerController : NetworkBehaviour
         m_Rigidbody = GetComponent<Rigidbody>();
         m_PlayerInfo = GetComponent<PlayerInfo>();
 
-
+        
     }
 
     public void Start()
     {
-        InitializeInput();
+        if(isLocalPlayer) InitializeInput();
     }
 
-    [ClientRpc]
-    void InitializeInput() {
 
+    void InitializeInput() {
+        Debug.Log("Hola!");
         _input = new BasicPlayer();
 
         _input.PC.Move.performed += ctx => {
 
             Vector3 rawInput = ctx.ReadValue<Vector2>();
-
 
             InputSteering = rawInput.x;
             InputAcceleration = rawInput.y;
@@ -97,6 +95,7 @@ public class PlayerController : NetworkBehaviour
 
     }
 
+
     public void Update()
     {
         Speed = m_Rigidbody.velocity.magnitude;
@@ -104,7 +103,9 @@ public class PlayerController : NetworkBehaviour
 
     public void FixedUpdate()
     {
-        float steering = maxSteeringAngle * InputSteering;
+
+    float steering = maxSteeringAngle * InputSteering;
+        
 
         foreach (AxleInfo axleInfo in axleInfos)
         {
@@ -155,7 +156,21 @@ public class PlayerController : NetworkBehaviour
         SpeedLimiter();
         AddDownForce();
         TractionControl();
+      
     }
+
+    #region Rpcs
+
+
+
+    #endregion
+
+    #region Server
+
+
+    #endregion
+
+    
 
     #endregion
 
