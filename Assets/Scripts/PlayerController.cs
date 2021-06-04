@@ -178,8 +178,6 @@ public class PlayerController : NetworkBehaviour
     {
         CmdApplyMovement(_inputSteering, _inputAcceleration, _inputBrake);
         ClientApplyMovement();
-
-
     }
 
     #region Rpcs
