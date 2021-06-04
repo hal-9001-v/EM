@@ -12,8 +12,7 @@ public class ScreenConsole : MonoBehaviour
 
     [Header("Settings")]
     [SerializeField] bool _showConsole = false;
-    [SerializeField] Color _errorColor = Color.red:
-   
+
     DebugControls controls;
 
 
@@ -21,15 +20,16 @@ public class ScreenConsole : MonoBehaviour
     {
         controls = new DebugControls();
 
-        controls.Debug.DisplayConsole.performed += ctx => 
+        controls.Debug.DisplayConsole.performed += ctx =>
         {
-            
+
             if (_showConsole)
             {
                 _showConsole = false;
                 HideConsole();
             }
-            else {
+            else
+            {
                 _showConsole = true;
                 ShowConsole();
             }
@@ -48,7 +48,7 @@ public class ScreenConsole : MonoBehaviour
 
     private void OnEnable()
     {
-        Application.logMessageReceived +=HandleLog;
+        Application.logMessageReceived += HandleLog;
     }
 
     private void OnDisable()
@@ -58,13 +58,16 @@ public class ScreenConsole : MonoBehaviour
 
 
 
-    void ShowConsole() {
-        if (_textMesh != null) {
+    void ShowConsole()
+    {
+        if (_textMesh != null)
+        {
             _textMesh.enabled = true;
         }
     }
 
-    void HideConsole() {
+    void HideConsole()
+    {
         if (_textMesh != null)
         {
             _textMesh.enabled = false;
@@ -75,7 +78,9 @@ public class ScreenConsole : MonoBehaviour
     {
         if (_textMesh != null)
         {
-            _textMesh.text = _textMesh.text + message +"\n";
+
+            _textMesh.text = _textMesh.text + message + "\n";
+
         }
     }
 
