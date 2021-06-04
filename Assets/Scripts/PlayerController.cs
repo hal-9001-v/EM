@@ -60,12 +60,14 @@ public class PlayerController : NetworkBehaviour
         m_Rigidbody = GetComponent<Rigidbody>();
         m_PlayerInfo = GetComponent<PlayerInfo>();
 
-        
+
     }
 
+    
     public void Start()
-    {
+    {        
         if(isLocalPlayer) InitializeInput();
+
     }
 
 
