@@ -39,26 +39,15 @@ public class UIManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI textPosition;
 
     public SetupPlayer myChangingPlayer;
-    [SerializeField] private PolePositionManager _manager;
-
 
     private void Awake()
     {
         m_NetworkManager = FindObjectOfType<MyNetworkManager>();
-        _manager = FindObjectOfType<PolePositionManager>();
 
         _name.placeholder.color =  red.GetComponent<Image>().color;
         _name.textComponent.color= red.GetComponent<Image>().color;
 
     }
-
-    private void Update()
-    {
-        textPosition.text = _manager.GetRaceProgress();
-
-    }
-
-
 
     private void Start()
     {
@@ -94,6 +83,10 @@ public class UIManager : MonoBehaviour
     public void UpdateSpeed(int speed)
     {
         textSpeed.text = "Speed " + speed + " Km/h";
+    }
+
+    public void UpdateRaceRank(string rank) {
+        textPosition.text = rank;
     }
 
     private void ActivateMainMenu()

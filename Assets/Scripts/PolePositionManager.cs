@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 using Mirror;
 using UnityEngine;
 
-public class PolePositionManager : NetworkBehaviour
+//public class PolePositionManager : NetworkBehaviour
+public class PolePositionManager : MonoBehaviour
 {
     public int numPlayers;
-    
 
     const int MaxPlayers = 4;
     private MyNetworkManager _networkManager;
@@ -16,11 +13,15 @@ public class PolePositionManager : NetworkBehaviour
     private List<PlayerInfo> _players = new List<PlayerInfo>();
     private CircuitController _circuitController;
     private GameObject[] _debuggingSpheres;
-    
+
+    private UIManager _uiManager;
+
     private void Awake()
     {
         if (_networkManager == null) _networkManager = FindObjectOfType<MyNetworkManager>();
         if (_circuitController == null) _circuitController = FindObjectOfType<CircuitController>();
+        if (_uiManager == null) _uiManager = FindObjectOfType<UIManager>();
+
 
         _debuggingSpheres = new GameObject[_networkManager.maxConnections];
         for (int i = 0; i < _networkManager.maxConnections; ++i)
@@ -32,18 +33,16 @@ public class PolePositionManager : NetworkBehaviour
 
     private void Update()
     {
-        /*
-        if (_players.Count == 0)
-            return;
+        _uiManager.UpdateRaceRank(GetRaceProgress());
 
-        UpdateRaceProgress();
-        */
     }
 
-    [Server]
+
     public void AddPlayer(PlayerInfo player)
     {
         _players.Add(player);
+
+
     }
 
     private class PlayerInfoComparer : Comparer<PlayerInfo>
@@ -67,8 +66,8 @@ public class PolePositionManager : NetworkBehaviour
     {
         // Update car arc-lengths
         float[] arcLengths = new float[MaxPlayers];
-        
- 
+
+
         for (int i = 0; i < _players.Count; ++i)
         {
             arcLengths[i] = ComputeCarArcLength(i);
@@ -76,13 +75,13 @@ public class PolePositionManager : NetworkBehaviour
 
         _players.Sort(new PlayerInfoComparer(arcLengths));
 
-        string myRaceOrder = "";
+        string raceOrder = "";
         foreach (var player in _players)
         {
-            myRaceOrder += player.Name + " ";
+            raceOrder += player.Name + " ";
         }
 
-        return myRaceOrder;
+        return raceOrder;
     }
 
     float ComputeCarArcLength(int id)
