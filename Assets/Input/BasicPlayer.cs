@@ -27,6 +27,14 @@ public class @BasicPlayer : IInputActionCollection, IDisposable
                     ""interactions"": """"
                 },
                 {
+                    ""name"": ""ChangeCamera"",
+                    ""type"": ""Button"",
+                    ""id"": ""d454c09d-e692-4c80-8fe3-5b11af46c1a2"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """"
+                },
+                {
                     ""name"": ""Brake"",
                     ""type"": ""Button"",
                     ""id"": ""770f1879-3cfe-4890-ab88-a7b9ae647940"",
@@ -156,6 +164,72 @@ public class @BasicPlayer : IInputActionCollection, IDisposable
                     ""action"": ""Brake"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""1D Axis"",
+                    ""id"": ""8508e737-9d2e-4510-8e4e-5f0359e4639a"",
+                    ""path"": ""1DAxis"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Car"",
+                    ""action"": ""ChangeCamera"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""Negative"",
+                    ""id"": ""a39d9472-463c-40f6-bbfb-253a8f29f092"",
+                    ""path"": ""<Keyboard>/a"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Car"",
+                    ""action"": ""ChangeCamera"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""Positive"",
+                    ""id"": ""2dd1994b-ae91-4ddd-bd5a-d290a5e01506"",
+                    ""path"": ""<Keyboard>/d"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Car"",
+                    ""action"": ""ChangeCamera"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""1D Axis"",
+                    ""id"": ""55a16eda-dd27-46e0-8c87-9cce05ecb1f5"",
+                    ""path"": ""1DAxis"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Car"",
+                    ""action"": ""ChangeCamera"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""Negative"",
+                    ""id"": ""36ba602c-a73b-46a2-9ba2-c35add9e41ab"",
+                    ""path"": ""<Keyboard>/leftArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Car"",
+                    ""action"": ""ChangeCamera"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""Positive"",
+                    ""id"": ""ca464173-ce59-42c6-880f-cfa63b731f66"",
+                    ""path"": ""<Keyboard>/rightArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Car"",
+                    ""action"": ""ChangeCamera"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
                 }
             ]
         }
@@ -177,6 +251,7 @@ public class @BasicPlayer : IInputActionCollection, IDisposable
         // PC
         m_PC = asset.FindActionMap("PC", throwIfNotFound: true);
         m_PC_Move = m_PC.FindAction("Move", throwIfNotFound: true);
+        m_PC_ChangeCamera = m_PC.FindAction("ChangeCamera", throwIfNotFound: true);
         m_PC_Brake = m_PC.FindAction("Brake", throwIfNotFound: true);
     }
 
@@ -228,12 +303,14 @@ public class @BasicPlayer : IInputActionCollection, IDisposable
     private readonly InputActionMap m_PC;
     private IPCActions m_PCActionsCallbackInterface;
     private readonly InputAction m_PC_Move;
+    private readonly InputAction m_PC_ChangeCamera;
     private readonly InputAction m_PC_Brake;
     public struct PCActions
     {
         private @BasicPlayer m_Wrapper;
         public PCActions(@BasicPlayer wrapper) { m_Wrapper = wrapper; }
         public InputAction @Move => m_Wrapper.m_PC_Move;
+        public InputAction @ChangeCamera => m_Wrapper.m_PC_ChangeCamera;
         public InputAction @Brake => m_Wrapper.m_PC_Brake;
         public InputActionMap Get() { return m_Wrapper.m_PC; }
         public void Enable() { Get().Enable(); }
@@ -247,6 +324,9 @@ public class @BasicPlayer : IInputActionCollection, IDisposable
                 @Move.started -= m_Wrapper.m_PCActionsCallbackInterface.OnMove;
                 @Move.performed -= m_Wrapper.m_PCActionsCallbackInterface.OnMove;
                 @Move.canceled -= m_Wrapper.m_PCActionsCallbackInterface.OnMove;
+                @ChangeCamera.started -= m_Wrapper.m_PCActionsCallbackInterface.OnChangeCamera;
+                @ChangeCamera.performed -= m_Wrapper.m_PCActionsCallbackInterface.OnChangeCamera;
+                @ChangeCamera.canceled -= m_Wrapper.m_PCActionsCallbackInterface.OnChangeCamera;
                 @Brake.started -= m_Wrapper.m_PCActionsCallbackInterface.OnBrake;
                 @Brake.performed -= m_Wrapper.m_PCActionsCallbackInterface.OnBrake;
                 @Brake.canceled -= m_Wrapper.m_PCActionsCallbackInterface.OnBrake;
@@ -257,6 +337,9 @@ public class @BasicPlayer : IInputActionCollection, IDisposable
                 @Move.started += instance.OnMove;
                 @Move.performed += instance.OnMove;
                 @Move.canceled += instance.OnMove;
+                @ChangeCamera.started += instance.OnChangeCamera;
+                @ChangeCamera.performed += instance.OnChangeCamera;
+                @ChangeCamera.canceled += instance.OnChangeCamera;
                 @Brake.started += instance.OnBrake;
                 @Brake.performed += instance.OnBrake;
                 @Brake.canceled += instance.OnBrake;
@@ -276,6 +359,7 @@ public class @BasicPlayer : IInputActionCollection, IDisposable
     public interface IPCActions
     {
         void OnMove(InputAction.CallbackContext context);
+        void OnChangeCamera(InputAction.CallbackContext context);
         void OnBrake(InputAction.CallbackContext context);
     }
 }
