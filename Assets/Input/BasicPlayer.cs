@@ -27,17 +27,17 @@ public class @BasicPlayer : IInputActionCollection, IDisposable
                     ""interactions"": """"
                 },
                 {
-                    ""name"": ""ChangeCamera"",
+                    ""name"": ""Brake"",
                     ""type"": ""Button"",
-                    ""id"": ""d454c09d-e692-4c80-8fe3-5b11af46c1a2"",
+                    ""id"": ""770f1879-3cfe-4890-ab88-a7b9ae647940"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """"
                 },
                 {
-                    ""name"": ""Brake"",
+                    ""name"": ""Pause"",
                     ""type"": ""Button"",
-                    ""id"": ""770f1879-3cfe-4890-ab88-a7b9ae647940"",
+                    ""id"": ""e2b55f53-d436-4acd-b0e5-0b65b41f05f8"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """"
@@ -166,70 +166,15 @@ public class @BasicPlayer : IInputActionCollection, IDisposable
                     ""isPartOfComposite"": false
                 },
                 {
-                    ""name"": ""1D Axis"",
-                    ""id"": ""8508e737-9d2e-4510-8e4e-5f0359e4639a"",
-                    ""path"": ""1DAxis"",
+                    ""name"": """",
+                    ""id"": ""bea45604-2f4c-46f1-b4d5-807d9ae9ad89"",
+                    ""path"": ""<Keyboard>/escape"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": ""Car"",
-                    ""action"": ""ChangeCamera"",
-                    ""isComposite"": true,
+                    ""action"": ""Pause"",
+                    ""isComposite"": false,
                     ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": ""Negative"",
-                    ""id"": ""a39d9472-463c-40f6-bbfb-253a8f29f092"",
-                    ""path"": ""<Keyboard>/a"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": ""Car"",
-                    ""action"": ""ChangeCamera"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": true
-                },
-                {
-                    ""name"": ""Positive"",
-                    ""id"": ""2dd1994b-ae91-4ddd-bd5a-d290a5e01506"",
-                    ""path"": ""<Keyboard>/d"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": ""Car"",
-                    ""action"": ""ChangeCamera"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": true
-                },
-                {
-                    ""name"": ""1D Axis"",
-                    ""id"": ""55a16eda-dd27-46e0-8c87-9cce05ecb1f5"",
-                    ""path"": ""1DAxis"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": ""Car"",
-                    ""action"": ""ChangeCamera"",
-                    ""isComposite"": true,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": ""Negative"",
-                    ""id"": ""36ba602c-a73b-46a2-9ba2-c35add9e41ab"",
-                    ""path"": ""<Keyboard>/leftArrow"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": ""Car"",
-                    ""action"": ""ChangeCamera"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": true
-                },
-                {
-                    ""name"": ""Positive"",
-                    ""id"": ""ca464173-ce59-42c6-880f-cfa63b731f66"",
-                    ""path"": ""<Keyboard>/rightArrow"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": ""Car"",
-                    ""action"": ""ChangeCamera"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": true
                 }
             ]
         }
@@ -251,8 +196,8 @@ public class @BasicPlayer : IInputActionCollection, IDisposable
         // PC
         m_PC = asset.FindActionMap("PC", throwIfNotFound: true);
         m_PC_Move = m_PC.FindAction("Move", throwIfNotFound: true);
-        m_PC_ChangeCamera = m_PC.FindAction("ChangeCamera", throwIfNotFound: true);
         m_PC_Brake = m_PC.FindAction("Brake", throwIfNotFound: true);
+        m_PC_Pause = m_PC.FindAction("Pause", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -303,15 +248,15 @@ public class @BasicPlayer : IInputActionCollection, IDisposable
     private readonly InputActionMap m_PC;
     private IPCActions m_PCActionsCallbackInterface;
     private readonly InputAction m_PC_Move;
-    private readonly InputAction m_PC_ChangeCamera;
     private readonly InputAction m_PC_Brake;
+    private readonly InputAction m_PC_Pause;
     public struct PCActions
     {
         private @BasicPlayer m_Wrapper;
         public PCActions(@BasicPlayer wrapper) { m_Wrapper = wrapper; }
         public InputAction @Move => m_Wrapper.m_PC_Move;
-        public InputAction @ChangeCamera => m_Wrapper.m_PC_ChangeCamera;
         public InputAction @Brake => m_Wrapper.m_PC_Brake;
+        public InputAction @Pause => m_Wrapper.m_PC_Pause;
         public InputActionMap Get() { return m_Wrapper.m_PC; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -324,12 +269,12 @@ public class @BasicPlayer : IInputActionCollection, IDisposable
                 @Move.started -= m_Wrapper.m_PCActionsCallbackInterface.OnMove;
                 @Move.performed -= m_Wrapper.m_PCActionsCallbackInterface.OnMove;
                 @Move.canceled -= m_Wrapper.m_PCActionsCallbackInterface.OnMove;
-                @ChangeCamera.started -= m_Wrapper.m_PCActionsCallbackInterface.OnChangeCamera;
-                @ChangeCamera.performed -= m_Wrapper.m_PCActionsCallbackInterface.OnChangeCamera;
-                @ChangeCamera.canceled -= m_Wrapper.m_PCActionsCallbackInterface.OnChangeCamera;
                 @Brake.started -= m_Wrapper.m_PCActionsCallbackInterface.OnBrake;
                 @Brake.performed -= m_Wrapper.m_PCActionsCallbackInterface.OnBrake;
                 @Brake.canceled -= m_Wrapper.m_PCActionsCallbackInterface.OnBrake;
+                @Pause.started -= m_Wrapper.m_PCActionsCallbackInterface.OnPause;
+                @Pause.performed -= m_Wrapper.m_PCActionsCallbackInterface.OnPause;
+                @Pause.canceled -= m_Wrapper.m_PCActionsCallbackInterface.OnPause;
             }
             m_Wrapper.m_PCActionsCallbackInterface = instance;
             if (instance != null)
@@ -337,12 +282,12 @@ public class @BasicPlayer : IInputActionCollection, IDisposable
                 @Move.started += instance.OnMove;
                 @Move.performed += instance.OnMove;
                 @Move.canceled += instance.OnMove;
-                @ChangeCamera.started += instance.OnChangeCamera;
-                @ChangeCamera.performed += instance.OnChangeCamera;
-                @ChangeCamera.canceled += instance.OnChangeCamera;
                 @Brake.started += instance.OnBrake;
                 @Brake.performed += instance.OnBrake;
                 @Brake.canceled += instance.OnBrake;
+                @Pause.started += instance.OnPause;
+                @Pause.performed += instance.OnPause;
+                @Pause.canceled += instance.OnPause;
             }
         }
     }
@@ -359,7 +304,7 @@ public class @BasicPlayer : IInputActionCollection, IDisposable
     public interface IPCActions
     {
         void OnMove(InputAction.CallbackContext context);
-        void OnChangeCamera(InputAction.CallbackContext context);
         void OnBrake(InputAction.CallbackContext context);
+        void OnPause(InputAction.CallbackContext context);
     }
 }

@@ -11,8 +11,8 @@ using Mirror;
 public class PlayerController : NetworkBehaviour
 {
     [SyncVar] private int _startCollider = 0;
-
-
+    
+    
     #region Variables
     [Header("Movement")] public List<AxleInfo> axleInfos;
     public float forwardMotorTorque = 100000;
@@ -27,8 +27,8 @@ public class PlayerController : NetworkBehaviour
     private float _inputAcceleration { get; set; }
     private float _inputSteering { get; set; }
     private bool _inputBrake { get; set; }
+    public bool _inputPauseMenu { get; set; }
 
-    BasicPlayer _input;
 
     private PlayerInfo m_PlayerInfo;
 
@@ -66,14 +66,11 @@ public class PlayerController : NetworkBehaviour
 
     }
 
-    public void Start()
-    {
-        if (isLocalPlayer) InitializeInput();
+  
 
-    }
-        void InitializeInput()
+
+    public void InitializeInput(BasicPlayer _input)
         {
-            _input = new BasicPlayer();
 
             _input.PC.Move.performed += ctx =>
             {
@@ -96,9 +93,12 @@ public class PlayerController : NetworkBehaviour
 
             };
 
+          
             _input.Enable();
 
         }
+
+
 
 
         public void Update()
@@ -178,7 +178,7 @@ public class PlayerController : NetworkBehaviour
         public void FixedUpdate()
         {
             CmdApplyMovement(_inputSteering, _inputAcceleration, _inputBrake);
-            ClientApplyMovement();
+            //ClientApplyMovement();
         }
 
         #region Rpcs
@@ -320,4 +320,5 @@ public class PlayerController : NetworkBehaviour
 
             }            
         }
+
     }

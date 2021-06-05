@@ -139,7 +139,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &152685679
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -319,9 +319,9 @@ MonoBehaviour:
   m_Focus: {fileID: 0}
   m_offset: {x: 10, y: 10, z: 10}
   m_Circuit: {fileID: 9126478172555348644}
-  m_Distance: 10
+  m_Distance: 15
   m_Elevation: 8
-  m_Following: 0.5
+  m_Following: 0.75
 --- !u!1 &1839589612
 GameObject:
   m_ObjectHideFlags: 0
@@ -352,8 +352,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82380cc62dc959948a09034c0eb29bfd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  syncMode: 0
-  syncInterval: 0.1
   numPlayers: 0
 --- !u!4 &1839589614
 Transform:
@@ -382,7 +380,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sceneId: 3288543179
-  serverOnly: 1
+  serverOnly: 0
   visible: 0
   m_AssetId: 
   hasSpawned: 0
@@ -780,7 +778,7 @@ MonoBehaviour:
   authenticator: {fileID: 0}
   playerPrefab: {fileID: 1508097745644926054, guid: 8cb0f194315f5874797b12dac7f6cdfb,
     type: 3}
-  autoCreatePlayer: 1
+  autoCreatePlayer: 0
   playerSpawnMethod: 1
   spawnPrefabs: []
 --- !u!4 &2140735093

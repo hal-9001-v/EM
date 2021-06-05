@@ -14,17 +14,17 @@
                     "interactions": ""
                 },
                 {
-                    "name": "ChangeCamera",
+                    "name": "Brake",
                     "type": "Button",
-                    "id": "d454c09d-e692-4c80-8fe3-5b11af46c1a2",
+                    "id": "770f1879-3cfe-4890-ab88-a7b9ae647940",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": ""
                 },
                 {
-                    "name": "Brake",
+                    "name": "Pause",
                     "type": "Button",
-                    "id": "770f1879-3cfe-4890-ab88-a7b9ae647940",
+                    "id": "e2b55f53-d436-4acd-b0e5-0b65b41f05f8",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": ""
@@ -153,70 +153,15 @@
                     "isPartOfComposite": false
                 },
                 {
-                    "name": "1D Axis",
-                    "id": "8508e737-9d2e-4510-8e4e-5f0359e4639a",
-                    "path": "1DAxis",
+                    "name": "",
+                    "id": "bea45604-2f4c-46f1-b4d5-807d9ae9ad89",
+                    "path": "<Keyboard>/escape",
                     "interactions": "",
                     "processors": "",
                     "groups": "Car",
-                    "action": "ChangeCamera",
-                    "isComposite": true,
+                    "action": "Pause",
+                    "isComposite": false,
                     "isPartOfComposite": false
-                },
-                {
-                    "name": "Negative",
-                    "id": "a39d9472-463c-40f6-bbfb-253a8f29f092",
-                    "path": "<Keyboard>/a",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Car",
-                    "action": "ChangeCamera",
-                    "isComposite": false,
-                    "isPartOfComposite": true
-                },
-                {
-                    "name": "Positive",
-                    "id": "2dd1994b-ae91-4ddd-bd5a-d290a5e01506",
-                    "path": "<Keyboard>/d",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Car",
-                    "action": "ChangeCamera",
-                    "isComposite": false,
-                    "isPartOfComposite": true
-                },
-                {
-                    "name": "1D Axis",
-                    "id": "55a16eda-dd27-46e0-8c87-9cce05ecb1f5",
-                    "path": "1DAxis",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Car",
-                    "action": "ChangeCamera",
-                    "isComposite": true,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "Negative",
-                    "id": "36ba602c-a73b-46a2-9ba2-c35add9e41ab",
-                    "path": "<Keyboard>/leftArrow",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Car",
-                    "action": "ChangeCamera",
-                    "isComposite": false,
-                    "isPartOfComposite": true
-                },
-                {
-                    "name": "Positive",
-                    "id": "ca464173-ce59-42c6-880f-cfa63b731f66",
-                    "path": "<Keyboard>/rightArrow",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Car",
-                    "action": "ChangeCamera",
-                    "isComposite": false,
-                    "isPartOfComposite": true
                 }
             ]
         }
