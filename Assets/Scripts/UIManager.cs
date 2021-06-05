@@ -181,9 +181,13 @@ public class UIManager : MonoBehaviour
         currentPlayers.text = i + "/4";
 
     }
-    public void UpdateWarning(bool b) {
-        
+
+    public void UpdateWarning(bool b)
+    {
+
         warning.SetActive(b);
+
+    }
 
     public void UpdateTextCountDown(string newText)
     {
