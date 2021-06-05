@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using Mirror;
 using UnityEngine;
 
 //public class PolePositionManager : NetworkBehaviour
-public class PolePositionManager : MonoBehaviour
+public class PolePositionManager : NetworkBehaviour
 {
     public int numPlayers;
 
@@ -15,12 +16,15 @@ public class PolePositionManager : MonoBehaviour
     private GameObject[] _debuggingSpheres;
 
     private UIManager _uiManager;
+    
+    private Timer _timer;
 
     private void Awake()
     {
         if (_networkManager == null) _networkManager = FindObjectOfType<MyNetworkManager>();
         if (_circuitController == null) _circuitController = FindObjectOfType<CircuitController>();
         if (_uiManager == null) _uiManager = FindObjectOfType<UIManager>();
+        if (_timer == null) _timer = FindObjectOfType<Timer>();
 
 
         _debuggingSpheres = new GameObject[_networkManager.maxConnections];
@@ -40,7 +44,6 @@ public class PolePositionManager : MonoBehaviour
     public void AddPlayer(PlayerInfo player)
     {
         _players.Add(player);
-
 
     }
 
@@ -122,4 +125,32 @@ public class PolePositionManager : MonoBehaviour
 
         return minArcL;
     }
+
+    public void StarCountDownUI()
+    {
+        _uiManager.StartCountDown();
+
+        ChangeNumbersCountDown();
+        
+        _uiManager.ActivateInGameHUD();
+
+    }
+
+    IEnumerator ChangeNumbersCountDown()
+    {
+        yield return new WaitForSeconds(1);
+        
+        _uiManager.UpdateTextCountDown("2");
+        
+        yield return new WaitForSeconds(1);
+        
+        _uiManager.UpdateTextCountDown("1");
+        
+        yield return new WaitForSeconds(1);
+        
+        _uiManager.UpdateTextCountDown("GO");
+    }
+    
+   
+    
 }

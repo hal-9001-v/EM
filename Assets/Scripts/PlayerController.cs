@@ -11,6 +11,7 @@ using Mirror;
 public class PlayerController : NetworkBehaviour
 {
     [SyncVar] private int _startCollider = 0;
+    [SyncVar] private bool _canMove = false;
     
     
     #region Variables
@@ -165,6 +166,7 @@ public class PlayerController : NetworkBehaviour
         [Command]
         void CmdApplyMovement(float steering, float acceleration, bool brake)
         {
+            if (!_canMove) return;
             ApplyMovement(steering, acceleration, brake);
         }
 
@@ -311,14 +313,8 @@ public class PlayerController : NetworkBehaviour
 
                 
                 Debug.Log("Next Collider = " + m_PlayerInfo.NextCollider);
-                
-                
-
-              
-
-                
 
             }            
         }
 
-    }
+}
