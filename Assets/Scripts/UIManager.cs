@@ -5,15 +5,15 @@ using Mirror;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-
+using UnityEngine.InputSystem;
 public class UIManager : MonoBehaviour
 {
     public bool showGUI = true;
 
     private MyNetworkManager m_NetworkManager;
     private PolePositionManager  _manager;
-     
-    private PlayerController _player;
+
+
     [Header("Main Menu")] [SerializeField] private GameObject mainMenu;
     [SerializeField] private Button buttonHost;
     [SerializeField] private Button buttonClient;
@@ -68,26 +68,19 @@ public class UIManager : MonoBehaviour
         _name.textComponent.color= red.GetComponent<Image>().color;
         pauseHUD.SetActive(false);
     }
-
-
+   
+    
     private void Update()
     {
         textPosition.text = _manager.GetRaceProgress();
-        if(_player!=null) {
-            pauseHUD.SetActive(_player.GetPause());
-            Debug.Log("willing to pause");
-        }
-        
-        
         //if( myChangingPlayer!= null) textLaps.text = myChangingPlayer.
         
     }
 
 
-
-
     private void Start()
     {
+
         buttonHost.onClick.AddListener(() => StartHost());
         buttonClient.onClick.AddListener(() => StartClient());
         buttonServer.onClick.AddListener(() => StartServer());
@@ -107,9 +100,14 @@ public class UIManager : MonoBehaviour
         ActivateMainMenu();
     }
 
+    public void Pause(){
+
+        pauseHUD.SetActive(true);
+
+    }
     private void Resume(){
 
-        if(_player != null) _player.SetPause();
+        pauseHUD.SetActive(false);
 
     }
 
@@ -171,7 +169,6 @@ public class UIManager : MonoBehaviour
         personalizationMenu.SetActive(false);
         playMenu.SetActive(false);
         inGameHUD.SetActive(true);
-        if(myChangingPlayer !=null)  _player = myChangingPlayer.gameObject.GetComponent<PlayerController>();
     }
 
     private void ActivatePersonalizationMenu(){

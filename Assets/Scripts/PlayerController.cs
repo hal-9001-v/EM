@@ -29,7 +29,6 @@ public class PlayerController : NetworkBehaviour
     private bool _inputBrake { get; set; }
     public bool _inputPauseMenu { get; set; }
 
-    BasicPlayer _input;
 
     private PlayerInfo m_PlayerInfo;
 
@@ -67,14 +66,11 @@ public class PlayerController : NetworkBehaviour
 
     }
 
-    public void Start()
-    {
-        if (isLocalPlayer) InitializeInput();
-    }
+  
 
-    void InitializeInput()
+
+    public void InitializeInput(BasicPlayer _input)
         {
-            _input = new BasicPlayer();
 
             _input.PC.Move.performed += ctx =>
             {
@@ -97,36 +93,12 @@ public class PlayerController : NetworkBehaviour
 
             };
 
-            _inputPauseMenu = false;
-            _input.PC.Pause.performed += ctx =>
-            {
-                Debug.Log("Paused!");
-                _inputPauseMenu = true;
-
-            };
-
+          
             _input.Enable();
 
         }
 
-        public bool GetPause(){
 
-            Debug.Log(_inputPauseMenu);
-            return _inputPauseMenu;
-
-
-        }
-
-         public void SetPause(){
-
-            _inputPauseMenu = false;
-
-
-        }
-
-        
-
-        
 
 
         public void Update()
@@ -206,7 +178,7 @@ public class PlayerController : NetworkBehaviour
         public void FixedUpdate()
         {
             CmdApplyMovement(_inputSteering, _inputAcceleration, _inputBrake);
-            ClientApplyMovement();
+            //ClientApplyMovement();
         }
 
         #region Rpcs

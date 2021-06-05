@@ -10,14 +10,15 @@ using Random = System.Random;
 */
 
 public class SetupPlayer : NetworkBehaviour
-{
+{   
+    
     [SyncVar] private int _id;
 
     [SyncVar(hook = nameof(HandleDisplayNameUpdated))]
     private string _name;
 
     [SyncVar(hook = nameof(HandleDisplayColorUpdated))]
-    private Color _carColor = Color.blue;
+    private Color _carColor;
 
     private UIManager _uiManager;
     private MyNetworkManager _networkManager;
@@ -26,6 +27,8 @@ public class SetupPlayer : NetworkBehaviour
     [SerializeField] private TextMeshProUGUI _nameText;
     private PlayerInfo _playerInfo;
     private PolePositionManager _polePositionManager;
+
+    
 
     public struct ServerMessage : NetworkMessage
     {
@@ -55,7 +58,7 @@ public class SetupPlayer : NetworkBehaviour
         _playerInfo.ID = _id;
         int aux = _id + 1;
         _playerInfo.Name = "Player " + aux;
-        _playerInfo.CurrentColor = _carColor;
+        _playerInfo.CurrentColor = new Color(0.91f,0.33f,0.33f,1);
         _playerInfo.CurrentLap = 0;
         _polePositionManager.AddPlayer(_playerInfo);
     }
@@ -66,16 +69,37 @@ public class SetupPlayer : NetworkBehaviour
     /// </summary>
     public override void OnStartLocalPlayer()
     {
+        
         CmdSetDisplayName(_playerInfo.Name);
+        CmdSetColor(_playerInfo.CurrentColor);
+        InitializeInput();
+        _playerController.InitializeInput(_input);
+        
     }
 
     /// <summary>Stop event, only called on client and host.</summary>
     public override void OnStopClient()
     {
+
     }
 
     #endregion
 
+    private BasicPlayer _input;
+
+    private void InitializeInput(){
+
+            _input = new BasicPlayer();
+
+            _input.PC.Pause.performed += ctx =>
+            {
+                _uiManager.Pause();
+
+            };
+            _input.Enable();
+    }
+
+ 
     private void Awake()
     {
         _playerInfo = GetComponent<PlayerInfo>();
@@ -111,12 +135,15 @@ public class SetupPlayer : NetworkBehaviour
     {
         Debug.Log("Color Cambiado");
         _meshRenderer.materials[1].color = newColor;
-    }
+        _nameText.color = newColor;
+        _playerInfo.CurrentColor = newColor;    
+        }
 
     void HandleDisplayNameUpdated(string oldName, string newName)
     {
         Debug.Log("Nombre cambiado de " + oldName + " a " + newName);
         _nameText.text = newName;
+        _playerInfo.name = newName;
     }
 
     void OnServerNotification(ServerMessage message)
