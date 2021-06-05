@@ -27,6 +27,7 @@ public class PlayerController : NetworkBehaviour
     private float _inputAcceleration { get; set; }
     private float _inputSteering { get; set; }
     private bool _inputBrake { get; set; }
+    public bool _inputPauseMenu { get; set; }
 
     BasicPlayer _input;
 
@@ -96,9 +97,36 @@ public class PlayerController : NetworkBehaviour
 
             };
 
+            _inputPauseMenu = false;
+            _input.PC.Pause.performed += ctx =>
+            {
+                Debug.Log("Paused!");
+                _inputPauseMenu = true;
+
+            };
+
             _input.Enable();
 
         }
+
+        public bool GetPause(){
+
+            Debug.Log(_inputPauseMenu);
+            return _inputPauseMenu;
+
+
+        }
+
+         public void SetPause(){
+
+            _inputPauseMenu = false;
+
+
+        }
+
+        
+
+        
 
 
         public void Update()
@@ -320,4 +348,5 @@ public class PlayerController : NetworkBehaviour
 
             }            
         }
+
     }

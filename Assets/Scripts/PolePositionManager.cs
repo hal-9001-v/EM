@@ -83,7 +83,7 @@ public class PolePositionManager : NetworkBehaviour
 
         return myRaceOrder;
     }
-
+    
     float ComputeCarArcLength(int id)
     {
         // Compute the projection of the car position to the closest circuit 

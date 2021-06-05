@@ -10,13 +10,13 @@ public class MyNetworkManager : NetworkManager
     private SetupPlayer player;
 
  #region Client
-
+    
     public override void OnClientConnect(NetworkConnection conn)
     {
         base.OnClientConnect(conn);
         Debug.Log("[CLIENT] Jugador conectado.");
 
-
+        
     }
 
     #endregion
@@ -32,7 +32,9 @@ public class MyNetworkManager : NetworkManager
         
 
         Debug.Log("[SERVER] Se ha conectado: " + player.GetDisplayName());
-    }
+    }   
+
+    
 
    
 
