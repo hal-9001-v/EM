@@ -28,7 +28,7 @@ public class PlayerController : NetworkBehaviour
     [SyncVar] private bool _canMove = false;
 
 
-    Timer t ;
+    Timer t;
     private double teleportThreshhold = 5;
     private double currentThreshhold = 0;
     private bool isCounting = false;
@@ -55,10 +55,18 @@ public class PlayerController : NetworkBehaviour
     public UIManager m_UImanager;
     public SetupPlayer m_SetupPlayer;
     private Rigidbody m_Rigidbody;
+
     private float m_SteerHelper = 0.8f;
 
 
     private float m_CurrentSpeed = 0;
+
+    public int mode;
+
+    int _currentCamera;
+    CameraController _camera;
+    private PolePositionManager _polePositionManager;
+
 
     private float Speed
     {
@@ -84,7 +92,7 @@ public class PlayerController : NetworkBehaviour
     {
         m_Rigidbody = GetComponent<Rigidbody>();
         m_PlayerInfo = GetComponent<PlayerInfo>();
-        m_SetupPlayer= GetComponent<SetupPlayer>();
+        m_SetupPlayer = GetComponent<SetupPlayer>();
         t = FindObjectOfType<Timer>();
         _startCollider = GameObject.Find("0");
 
@@ -93,8 +101,23 @@ public class PlayerController : NetworkBehaviour
 
     private void Start()
     {
-        if (isLocalPlayer) m_UImanager = FindObjectOfType<UIManager>();
-        if (isLocalPlayer) CmdCheckPointCheck(_startCollider.name);
+
+        if (isLocalPlayer)
+        {
+            m_UImanager = FindObjectOfType<UIManager>();
+            _polePositionManager = FindObjectOfType<PolePositionManager>();
+            _camera = FindObjectOfType<CameraController>();
+            CmdCheckPointCheck(_startCollider.name);
+
+            if (m_UImanager.playerIsViewer) mode = 1;
+            else mode = 0;
+
+            CmdPrepareForMode(mode);
+        }
+
+
+
+        if (_camera == null) Debug.Log("Fux");
 
     }
 
@@ -112,7 +135,15 @@ public class PlayerController : NetworkBehaviour
 
         _input.PC.Brake.canceled += ctx => { _inputBrake = false; };
 
-        
+        _input.PC.Camera.performed += ctx =>
+        {
+            if (ctx.ReadValue<float>() > 0)
+                DisplayNextCamera();
+            else
+                DisplayPreviousCamera();
+        };
+
+
 
         _input.Enable();
     }
@@ -189,12 +220,14 @@ public class PlayerController : NetworkBehaviour
     {
         if (!m_PlayerInfo.CanMove) return;
         ApplyMovement(steering, acceleration, brake);
-         if(isServer) {
+        if (isServer)
+        {
             //Debug.Log("Your current server time is " + t.GetCurrentServerTime() + " and the threshold is " + currentThreshhold + " and you are currently counting " + isCounting);
-            if((m_Rigidbody.velocity.magnitude < 0.5) ) CalculateTeleport();
-            else{
+            if ((m_Rigidbody.velocity.magnitude < 0.5)) CalculateTeleport();
+            else
+            {
                 isCounting = false;
-                currentThreshhold = t.GetCurrentServerTime()+teleportThreshhold;
+                currentThreshhold = t.GetCurrentServerTime() + teleportThreshhold;
             }
         }
     }
@@ -205,51 +238,94 @@ public class PlayerController : NetworkBehaviour
         ApplyMovement(_inputSteering, _inputAcceleration, _inputBrake);
     }
 
+
+    [Command]
+    public void CmdPrepareForMode(int newMode)
+    {
+        RpcPrepareForMode(newMode);
+
+    }
+
+    [ClientRpc]
+    void RpcPrepareForMode(int newMode)
+    {
+        switch (newMode)
+        {
+            case 0:
+
+                break;
+
+            case 1:
+                foreach (Collider c in GetComponentsInChildren<Collider>())
+                {
+                    c.enabled = false;
+                }
+
+                foreach (Renderer r in GetComponentsInChildren<Renderer>())
+                {
+                    r.enabled = false;
+                }
+
+                foreach (Canvas c in GetComponentsInChildren<Canvas>())
+                {
+                    c.enabled = false;
+                }
+                break;
+
+            default:
+                break;
+        }
+    }
+
     public void FixedUpdate()
     {
         CmdApplyMovement(_inputSteering, _inputAcceleration, _inputBrake);
         //ClientApplyMovement();
 
-    
+
     }
 
     [Server]
-    private void CalculateTeleport(){
-        if(!isCounting)
-            {
-                isCounting = true;
-                startingThreshholdTime = t.GetCurrentServerTime();
-                currentThreshhold =startingThreshholdTime+teleportThreshhold;
-                
-            }
-            
+    private void CalculateTeleport()
+    {
+        if (!isCounting)
+        {
+            isCounting = true;
+            startingThreshholdTime = t.GetCurrentServerTime();
+            currentThreshhold = startingThreshholdTime + teleportThreshhold;
 
-            if(t.GetCurrentServerTime() >= currentThreshhold){
-
-                int lookAux = GetNextCheckPoint();
-                int posAux = lookAux-1;
-                GameObject temp = GameObject.Find(posAux.ToString());
-                GameObject look = GameObject.Find(lookAux.ToString());
-                Teleport(temp, look);
-                currentThreshhold = t.GetCurrentServerTime()+30;
-                isCounting = false;
-
-            }
-
-    }
-
-    
-    private void Teleport(GameObject temp, GameObject look){
+        }
 
 
-            gameObject.transform.position = temp.transform.position;
-            gameObject.transform.rotation = Quaternion.Euler(new Vector3(gameObject.transform.rotation.x, 0, gameObject.transform.rotation.z));
-            gameObject.transform.LookAt(look.transform);
-        
+        if (t.GetCurrentServerTime() >= currentThreshhold)
+        {
+
+            int lookAux = GetNextCheckPoint();
+            int posAux = lookAux - 1;
+            GameObject temp = GameObject.Find(posAux.ToString());
+            GameObject look = GameObject.Find(lookAux.ToString());
+            Teleport(temp, look);
+            currentThreshhold = t.GetCurrentServerTime() + 30;
+            isCounting = false;
+
+        }
 
     }
 
-    private int GetNextCheckPoint (){
+
+    private void Teleport(GameObject temp, GameObject look)
+    {
+
+
+        gameObject.transform.position = temp.transform.position;
+        gameObject.transform.rotation = Quaternion.Euler(new Vector3(gameObject.transform.rotation.x, 0, gameObject.transform.rotation.z));
+        gameObject.transform.LookAt(look.transform);
+
+
+    }
+
+    private int GetNextCheckPoint()
+    {
 
         return _currentCheckPoint;
 
@@ -390,7 +466,7 @@ public class PlayerController : NetworkBehaviour
         ServerCheckPointCheck(name);
     }
 
-  
+
 
     [Server]
     public void ServerCheckPointCheck(string name)
@@ -398,7 +474,7 @@ public class PlayerController : NetworkBehaviour
         if (int.Parse(name) == _currentCheckPoint)
         {
             Debug.Log("Current Collider = " + name);
-            
+
             if (_currentLap != 0) _wrongWay = false;
 
             //Check if next collider is last collider 
@@ -429,7 +505,45 @@ public class PlayerController : NetworkBehaviour
         }
     }
 
-  
+
+    void DisplayNextCamera()
+    {
+        if (mode == 1 && _polePositionManager.players.Count != 0)
+        {
+            _currentCamera++;
+
+            if (_currentCamera >= _polePositionManager.players.Count)
+            {
+                _currentCamera = 0;
+            }
+
+            //_camera.m_Focus = _polePositionManager.PlayerTransforms[_currentCamera].gameObject;
+            FindObjectOfType<CameraController>().m_Focus = _polePositionManager.players[_currentCamera].transform;
+
+        }
+
+    }
+
+    void DisplayPreviousCamera()
+    {
+        if (mode == 1 && _polePositionManager.players.Count != 0)
+        {
+            _currentCamera--;
+
+            if (_currentCamera < 0)
+            {
+                _currentCamera = _polePositionManager.players.Count - 1;
+            }
+
+            //_camera.m_Focus = _polePositionManager.PlayerTransforms[_currentCamera].gameObject;
+            FindObjectOfType<CameraController>().m_Focus = _polePositionManager.players[_currentCamera].transform;
+
+
+        }
+
+
+    }
+
     private void OnTriggerEnter(Collider other)
     {
         //If i collide with trigger -> checkpoint && it's name is my next collideer

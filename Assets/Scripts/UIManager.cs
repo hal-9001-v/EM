@@ -31,7 +31,8 @@ public class UIManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI currentPlayers;
 
 
-    [Header("Character Personalization + Ready Menu")] [SerializeField]
+    [Header("Character Personalization + Ready Menu")]
+    [SerializeField]
     private GameObject personalizationMenu;
 
     [SerializeField] private Button ready;
@@ -45,7 +46,8 @@ public class UIManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI readyText;
 
 
-    [Header("In-Game HUD")] [SerializeField]
+    [Header("In-Game HUD")]
+    [SerializeField]
     private GameObject inGameHUD;
 
     [SerializeField] private TextMeshProUGUI textSpeed;
@@ -53,7 +55,8 @@ public class UIManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI textPosition;
 
 
-    [Header("Pause Menu")] [SerializeField]
+    [Header("Pause Menu")]
+    [SerializeField]
     private GameObject pauseHUD;
 
     [SerializeField] private Button resume;
@@ -61,7 +64,8 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Button quit;
 
 
-    [Header("Wrong Way Warning")] [SerializeField]
+    [Header("Wrong Way Warning")]
+    [SerializeField]
     private GameObject warning;
 
     #endregion
@@ -71,6 +75,8 @@ public class UIManager : MonoBehaviour
     [Header("CountDown")] [SerializeField] private GameObject countDown;
 
     [SerializeField] private TextMeshProUGUI numbersInCountDown;
+
+    public bool playerIsViewer;
 
     private void Awake()
     {
@@ -151,7 +157,7 @@ public class UIManager : MonoBehaviour
             myChangingPlayer.CmdSetDisplayName(_name.textComponent.text);
         }
     }
-    
+
     public void UpdateSpeed(int speed)
     {
         textSpeed.text = "Speed " + speed + " Km/h";
@@ -199,7 +205,7 @@ public class UIManager : MonoBehaviour
         playMenu.SetActive(false);
         inGameHUD.SetActive(true);
         countDown.SetActive(false);
-        
+
         myChangingPlayer.RpcActivateMovement();
     }
 
@@ -221,6 +227,15 @@ public class UIManager : MonoBehaviour
         countDown.SetActive(false);
     }
 
+    private void ActivateSpectateMenu()
+    {
+        mainMenu.SetActive(false);
+        playMenu.SetActive(false);
+        personalizationMenu.SetActive(false);
+        inGameHUD.SetActive(false);
+
+    }
+
     public void ActivateCountDown()
     {
         mainMenu.SetActive(false);
@@ -233,12 +248,17 @@ public class UIManager : MonoBehaviour
     private void Play()
     {
         NetworkClient.AddPlayer();
+        //        myChangingPlayer.IsViewer = false;
+        playerIsViewer = false;
         ActivatePersonalizationMenu();
     }
 
     private void Spectate()
     {
-        Debug.Log("Not Implemented!");
+        NetworkClient.AddPlayer();
+        //      myChangingPlayer.IsViewer = true;
+        playerIsViewer = true;
+        ActivateSpectateMenu();
     }
 
     private void Train()
