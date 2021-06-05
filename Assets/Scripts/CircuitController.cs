@@ -39,12 +39,18 @@ public class CircuitController : MonoBehaviour
         int colliderNum = GetColliderNumber(numPoints);
         Vector3[] collliderPos = new Vector3[colliderNum];
         int j = 0;
-        for (int i = 0; i < numPoints; i += colliderNum){
-
+        
+        //Debug
+        Debug.Log("Numbers of Colliders spawned: " + colliderNum);
+        
+        for (int i = 0; i < numPoints-1; i += (int)numPoints/(colliderNum)){
+            Debug.Log("CurrentCollider Index: " + i);
             collliderPos[j] = _pathPos[i];
             j++;
 
         }
+        collliderPos[colliderNum-1] = _pathPos[numPoints-1];
+
         SpawnColliders(collliderPos, colliderNum);
     }
 
@@ -78,7 +84,7 @@ public class CircuitController : MonoBehaviour
 
     public static int GetColliderNumber(int numPoints){
 
-        return (int) numPoints/5;
+        return (int) numPoints/2;
 
     }
 
@@ -99,7 +105,6 @@ public class CircuitController : MonoBehaviour
 
             carVec = (posIn - _pathPos[i]);
             float dotProd = Vector3.Dot(carVec, pathVec);
-            Debug.Log(dotProd);
 
             if (dotProd < 0)
                 continue;

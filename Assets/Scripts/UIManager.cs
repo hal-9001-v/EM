@@ -14,6 +14,7 @@ public class UIManager : MonoBehaviour
     private PolePositionManager  _manager;
 
 
+    #region GUIBUTTONS
     [Header("Main Menu")] [SerializeField] private GameObject mainMenu;
     [SerializeField] private Button buttonHost;
     [SerializeField] private Button buttonClient;
@@ -58,6 +59,7 @@ public class UIManager : MonoBehaviour
 
     [Header("Wrong Way Warning")] [SerializeField] private GameObject warning;
 
+    #endregion
     [HideInInspector]public SetupPlayer myChangingPlayer;
 
     private void Awake()
@@ -76,9 +78,11 @@ public class UIManager : MonoBehaviour
     private void Update()
     {
         textPosition.text = _manager.GetRaceProgress();
-        //if( myChangingPlayer!= null) textLaps.text = myChangingPlayer.
-        
+
     }
+
+
+
 
 
     private void Start()
@@ -88,12 +92,12 @@ public class UIManager : MonoBehaviour
         buttonClient.onClick.AddListener(() => StartClient());
         buttonServer.onClick.AddListener(() => StartServer());
         ready.onClick.AddListener(() => Ready());
-        blue.onClick.AddListener(() => setColor(blue.GetComponent<Image>().color));
-        green.onClick.AddListener(() => setColor(green.GetComponent<Image>().color));
-        red.onClick.AddListener(() => setColor(red.GetComponent<Image>().color));
-        black.onClick.AddListener(() => setColor(black.GetComponent<Image>().color));
-        white.onClick.AddListener(() => setColor(white.GetComponent<Image>().color));
-        yellow.onClick.AddListener(() => setColor(yellow.GetComponent<Image>().color));
+        blue.onClick.AddListener(() => SetColor(blue.GetComponent<Image>().color));
+        green.onClick.AddListener(() => SetColor(green.GetComponent<Image>().color));
+        red.onClick.AddListener(() => SetColor(red.GetComponent<Image>().color));
+        black.onClick.AddListener(() => SetColor(black.GetComponent<Image>().color));
+        white.onClick.AddListener(() => SetColor(white.GetComponent<Image>().color));
+        yellow.onClick.AddListener(() => SetColor(yellow.GetComponent<Image>().color));
         playButton.onClick.AddListener(() => Play());
         spectateButton.onClick.AddListener(() => Spectate());
         trainButton.onClick.AddListener(() => Train());
@@ -127,21 +131,28 @@ public class UIManager : MonoBehaviour
         Application.Quit();
 
     }
-    private void setColor(Color color){
+
+  
+    private void SetColor(Color color){
 
         _name.placeholder.color = color;
         _name.textComponent.color= color;
         if(myChangingPlayer != null) myChangingPlayer.CmdSetColor(color);
+
     }
 
     private void Ready(){
 
         readyText.text = "Yes";
         ready.gameObject.GetComponent<Image>().color = Color.green;
-        if(myChangingPlayer!=null) myChangingPlayer.CmdSetDisplayName(_name.textComponent.text);
+        if(myChangingPlayer!=null) {
+        myChangingPlayer.CmdSetDisplayName(_name.textComponent.text);
+         }
         ActivateInGameHUD();
         
     }
+
+
 
     public void UpdateSpeed(int speed)
     {
@@ -151,9 +162,18 @@ public class UIManager : MonoBehaviour
     public void UpdateRaceRank(string rank) {
         textPosition.text = rank;
     }
+
+     public void UpdateCurrentLap(int lap, int totalLaps) {
+        textLaps.text = "LAP: " + lap + "/" + totalLaps;
+    }
     public void UpdatePlayerText(int i){
 
         currentPlayers.text = i + "/4";
+
+    }
+    public void UpdateWarning(bool b) {
+        
+        warning.SetActive(b);
 
     }
     
@@ -192,11 +212,10 @@ public class UIManager : MonoBehaviour
     }
 
     private void Play(){
+        
 
         NetworkClient.AddPlayer();
         ActivatePersonalizationMenu();
-
-        
 
     }
 

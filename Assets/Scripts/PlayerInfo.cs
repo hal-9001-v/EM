@@ -15,6 +15,7 @@ public class PlayerInfo : MonoBehaviour
 
     public Color CurrentColor {get;set;}
     public int  NextCollider {get;set;}
+    public bool WrongWay {get;set;}
 
 
 

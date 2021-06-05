@@ -99,7 +99,13 @@ public class SetupPlayer : NetworkBehaviour
             _input.Enable();
     }
 
- 
+    public PlayerInfo GetPlayerInfo(){
+
+        return _playerInfo;
+
+    }
+
+
     private void Awake()
     {
         _playerInfo = GetComponent<PlayerInfo>();
@@ -115,7 +121,7 @@ public class SetupPlayer : NetworkBehaviour
         Destroy(gameObject);
         NetworkManager.singleton.StopClient();
     }
-
+    
     // Start is called before the first frame update
     void Start()
     {
@@ -123,6 +129,7 @@ public class SetupPlayer : NetworkBehaviour
         {
             _playerController.enabled = true;
             _playerController.OnSpeedChangeEvent += OnSpeedChangeEventHandler;
+            _playerController.m_UImanager = this._uiManager;
             _uiManager.myChangingPlayer = this;
             ConfigureCamera();
             NetworkClient.RegisterHandler<ServerMessage>(OnServerNotification);
