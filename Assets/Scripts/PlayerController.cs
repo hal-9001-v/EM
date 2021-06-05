@@ -11,8 +11,8 @@ using Mirror;
 public class PlayerController : NetworkBehaviour
 {
     [SyncVar] private int _startCollider = 0;
-
-
+    
+    
     #region Variables
     [Header("Movement")] public List<AxleInfo> axleInfos;
     public float forwardMotorTorque = 100000;

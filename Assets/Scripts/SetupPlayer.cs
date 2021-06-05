@@ -155,7 +155,7 @@ public class SetupPlayer : NetworkBehaviour
     public void SetDisplayName(string newName)
     {
         int aux = _id + 1;
-        if (newName.Length < 2) _name = "Player " + aux;
+        if (newName.Length < 2 || newName.Length > 14)  _name = "Player " + aux;
         else _name = newName;
     }
 

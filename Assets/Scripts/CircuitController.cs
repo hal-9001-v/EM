@@ -9,6 +9,8 @@ public class CircuitController : MonoBehaviour
     private float[] _cumArcLength;
     private float _totalLength;
 
+    
+
     public float CircuitLength
     {
         get { return _totalLength; }
@@ -86,6 +88,7 @@ public class CircuitController : MonoBehaviour
         float minArcL = float.NegativeInfinity;
         float minDist = float.PositiveInfinity;
         Vector3 minProj = Vector3.zero;
+        Vector3 carVec = Vector3.zero;
 
         // Check segments for valid projections of the point
         for (int i = 0; i < _pathPos.Length - 1; ++i)
@@ -94,8 +97,9 @@ public class CircuitController : MonoBehaviour
             float segLength = (_pathPos[i + 1] - _pathPos[i]).magnitude;
 
 
-            Vector3 carVec = (posIn - _pathPos[i]);
+            carVec = (posIn - _pathPos[i]);
             float dotProd = Vector3.Dot(carVec, pathVec);
+            Debug.Log(dotProd);
 
             if (dotProd < 0)
                 continue;
@@ -129,11 +133,11 @@ public class CircuitController : MonoBehaviour
                 }
             }
         }
-
+        
         segIdx = minSegIdx;
         posProjOut = minProj;
         distOut = minDist;
-
+        
         return minArcL;
     }
 }

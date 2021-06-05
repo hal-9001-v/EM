@@ -56,7 +56,9 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Button quit;
 
 
-    public SetupPlayer myChangingPlayer;
+    [Header("Wrong Way Warning")] [SerializeField] private GameObject warning;
+
+    [HideInInspector]public SetupPlayer myChangingPlayer;
 
     private void Awake()
     {
@@ -67,6 +69,7 @@ public class UIManager : MonoBehaviour
         _name.placeholder.color =  red.GetComponent<Image>().color;
         _name.textComponent.color= red.GetComponent<Image>().color;
         pauseHUD.SetActive(false);
+        warning.SetActive(false);
     }
    
     
@@ -192,6 +195,8 @@ public class UIManager : MonoBehaviour
 
         NetworkClient.AddPlayer();
         ActivatePersonalizationMenu();
+
+        
 
     }
 

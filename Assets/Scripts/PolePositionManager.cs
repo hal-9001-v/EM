@@ -105,7 +105,6 @@ public class PolePositionManager : MonoBehaviour
         int segIdx;
         float carDist;
         Vector3 carProj;
-
         float minArcL =
             this._circuitController.ComputeClosestPointArcLength(carPos, out segIdx, out carProj, out carDist);
 
