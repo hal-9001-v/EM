@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Mirror;
 using UnityEngine;
 
-//public class PolePositionManager : NetworkBehaviour
+
 public class PolePositionManager : NetworkBehaviour
 {
     public int numPlayers;
@@ -11,7 +11,8 @@ public class PolePositionManager : NetworkBehaviour
     const int MaxPlayers = 4;
     private MyNetworkManager _networkManager;
 
-    private List<PlayerInfo> _players = new List<PlayerInfo>();
+    public List<PlayerInfo> players = new List<PlayerInfo>();
+
 
     private CircuitController _circuitController;
     private GameObject[] _debuggingSpheres;
@@ -46,23 +47,28 @@ public class PolePositionManager : NetworkBehaviour
         }
     }
 
+
     private void Update()
     {
-        _uiManager.UpdateRaceRank(GetRaceProgress());
 
-        if (!isClientRaceInProgress && ArePlayersReady() && _players.Count >= 2)
+        if (!isClientRaceInProgress && ArePlayersReady() && players.Count >= 2)
         {
             ActiveRace();
             StarCountDownUI();
         }
+
+        // _uiManager.UpdateRaceRank(GetRaceProgress());
+
     }
-    
+
 
     public void AddPlayer(PlayerInfo player)
     {
-        if (_players.Count < 4)
+
+        if (players.Count < 4)
         {
-            _players.Add(player);
+            players.Add(player);
+
         }
         else
         {
@@ -71,9 +77,13 @@ public class PolePositionManager : NetworkBehaviour
 
     }
 
+
+
     public void RemovePlayer(PlayerInfo player)
     {
-        _players.Remove(player);
+        players.Remove(player);
+        //PlayerTransforms.Remove(player.transform);
+
     }
 
     private class PlayerInfoComparer : Comparer<PlayerInfo>
@@ -99,18 +109,18 @@ public class PolePositionManager : NetworkBehaviour
         float[] arcLengths = new float[MaxPlayers];
 
 
-        for (int i = 0; i < _players.Count; ++i)
+        for (int i = 0; i < players.Count; ++i)
         {
-            if (_players[i] != null)
+            if (players[i] != null)
             {
                 arcLengths[i] = ComputeCarArcLength(i);
             }
         }
 
-        _players.Sort(new PlayerInfoComparer(arcLengths));
+        players.Sort(new PlayerInfoComparer(arcLengths));
 
         string raceOrder = "";
-        foreach (var player in _players)
+        foreach (var player in players)
         {
             if (player != null)
             {
@@ -126,7 +136,7 @@ public class PolePositionManager : NetworkBehaviour
         // Compute the projection of the car position to the closest circuit 
         // path segment and accumulate the arc-length along of the car along
         // the circuit.
-        Vector3 carPos = this._players[id].transform.position;
+        Vector3 carPos = this.players[id].transform.position;
 
         int segIdx;
         float carDist;
@@ -135,14 +145,16 @@ public class PolePositionManager : NetworkBehaviour
             this._circuitController.ComputeClosestPointArcLength(carPos, out segIdx, out carProj, out carDist);
 
         this._debuggingSpheres[id].transform.position = carProj;
-        if (this._players[id].CurrentLap == 0)
+
+
+        if (this.players[id].CurrentLap == 0)
         {
             minArcL -= _circuitController.CircuitLength;
         }
         else
         {
             minArcL += _circuitController.CircuitLength *
-                       (_players[id].CurrentLap - 1);
+                       (players[id].CurrentLap - 1);
         }
 
         return minArcL;
@@ -160,7 +172,7 @@ public class PolePositionManager : NetworkBehaviour
         yield return new WaitForSeconds(1);
 
         _uiManager.UpdateTextCountDown("3");
-        
+
         yield return new WaitForSeconds(1);
 
         _uiManager.UpdateTextCountDown("2");
@@ -172,7 +184,7 @@ public class PolePositionManager : NetworkBehaviour
         yield return new WaitForSeconds(1);
 
         _uiManager.UpdateTextCountDown("GO");
-        
+
         ActiveMovement();
         _uiManager.ActivateInGameHUD();
     }
@@ -181,13 +193,13 @@ public class PolePositionManager : NetworkBehaviour
     private bool ArePlayersReady()
     {
         int count = 0;
-        for (int i = 0; i < _players.Count; i++)
+        for (int i = 0; i < players.Count; i++)
         {
-            Debug.Log(_players[i].IsReady);
-           if(_players[i].IsReady) count++;
+            Debug.Log(players[i].IsReady);
+            if (players[i].IsReady) count++;
         }
 
-        if (count > _players.Count / 2) return true;
+        if (count > players.Count / 2) return true;
         else return false;
     }
 
@@ -207,7 +219,7 @@ public class PolePositionManager : NetworkBehaviour
     {
         isActiveMovement = true;
     }
-    
+
     private void HandleActiveMovement(bool oldActiveMovement, bool newActiveMovement)
     {
         isActiveClientMovement = newActiveMovement;

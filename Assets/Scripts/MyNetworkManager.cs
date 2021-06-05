@@ -11,8 +11,8 @@ public class MyNetworkManager : NetworkManager
 
 
 
- #region Client
-    
+    #region Client
+
     public override void OnClientConnect(NetworkConnection conn)
     {
         base.OnClientConnect(conn);
@@ -25,12 +25,14 @@ public class MyNetworkManager : NetworkManager
 
     public override void OnServerAddPlayer(NetworkConnection conn)
     {
-     {   base.OnServerAddPlayer(conn);
-        UI = FindObjectOfType<UIManager>();
-        player = conn.identity.GetComponent<SetupPlayer>();
+        {
+            base.OnServerAddPlayer(conn);
+            UI = FindObjectOfType<UIManager>();
+            player = conn.identity.GetComponent<SetupPlayer>();
 
-        Debug.Log("[SERVER] Se ha conectado: " + player.GetDisplayName());
-    }   
+
+            Debug.Log("[SERVER] Se ha conectado: " + player.GetDisplayName());
+        }
 
 
         SendNumberOfPlayers();

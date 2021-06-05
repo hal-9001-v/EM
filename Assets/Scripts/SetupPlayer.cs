@@ -17,6 +17,8 @@ public class SetupPlayer : NetworkBehaviour
     [SyncVar(hook = nameof(HandleDisplayNameUpdated))]
     private string _name;
 
+    public bool IsViewer;
+
     [SyncVar(hook = nameof(HandleDisplayColorUpdated))]
     private Color _carColor;
     
@@ -29,7 +31,7 @@ public class SetupPlayer : NetworkBehaviour
     [SerializeField] private TextMeshProUGUI _nameText;
     private PlayerInfo _playerInfo;
     private PolePositionManager _polePositionManager;
-    
+
     public struct ServerMessage : NetworkMessage
     {
         public int client_numberPlayers;
@@ -44,7 +46,7 @@ public class SetupPlayer : NetworkBehaviour
     /// </summary>
     public override void OnStartServer()
     {
-        base.OnStartServer();
+        base.OnStartServer();        
         _id = NetworkServer.connections.Count - 1;
     }
 
@@ -71,11 +73,11 @@ public class SetupPlayer : NetworkBehaviour
     /// </summary>
     public override void OnStartLocalPlayer()
     {
-        
         CmdSetDisplayName(_playerInfo.Name);
         CmdSetColor(_playerInfo.CurrentColor);
         InitializeInput();
         _playerController.InitializeInput(_input);
+        
         
     }
 
@@ -154,12 +156,12 @@ public class SetupPlayer : NetworkBehaviour
         _nameText.text = newName;
         _playerInfo.name = newName;
     }
-
     void HandleSetReadyUpdated(bool oldReady, bool newReady)
     {
         _ready = newReady;
         _playerInfo.IsReady = newReady;
     }
+
 
     void OnServerNotification(ServerMessage message)
     {
@@ -226,7 +228,7 @@ public class SetupPlayer : NetworkBehaviour
 
     void ConfigureCamera()
     {
-        if (Camera.main != null) Camera.main.gameObject.GetComponent<CameraController>().m_Focus = this.gameObject;
+        if (Camera.main != null) Camera.main.gameObject.GetComponent<CameraController>().m_Focus = transform;
     }
 
     #region Test
