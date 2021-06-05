@@ -40,6 +40,11 @@ public class PolePositionManager : NetworkBehaviour
         _players.Add(player);
     }
 
+    public void RemovePlayer(PlayerInfo player)
+    {
+        _players.Remove(player);
+    }
+
     private class PlayerInfoComparer : Comparer<PlayerInfo>
     {
         float[] _arcLengths;
@@ -64,15 +69,21 @@ public class PolePositionManager : NetworkBehaviour
 
         for (int i = 0; i < _players.Count; ++i)
         {
-            arcLengths[i] = ComputeCarArcLength(i);
+            if (_players[i] != null)
+            {
+                arcLengths[i] = ComputeCarArcLength(i);
+            }
         }
-        
+
         _players.Sort(new PlayerInfoComparer(arcLengths));
 
         string myRaceOrder = "";
         foreach (var player in _players)
         {
-            myRaceOrder += player.Name + " ";
+            if (player != null)
+            {
+                myRaceOrder += player.Name + " ";
+            }
         }
 
         Debug.Log("El orden de carrera es: " + myRaceOrder);

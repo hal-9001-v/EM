@@ -12,12 +12,12 @@ using Random = System.Random;
 public class SetupPlayer : NetworkBehaviour
 {
     [SyncVar] private int _id;
-    [SyncVar (hook = nameof(HandleDisplayNameUpdated))] private string _name;
 
-    [SyncVar (hook = nameof(HandleDisplayColorUpdated))] private Color _carColor = Color.blue;
-    
-    
-    
+    [SyncVar(hook = nameof(HandleDisplayNameUpdated))]
+    private string _name;
+
+    [SyncVar(hook = nameof(HandleDisplayColorUpdated))]
+    private Color _carColor = Color.blue;
 
     private UIManager _uiManager;
     private MyNetworkManager _networkManager;
@@ -26,6 +26,11 @@ public class SetupPlayer : NetworkBehaviour
     [SerializeField] private TextMeshProUGUI _nameText;
     private PlayerInfo _playerInfo;
     private PolePositionManager _polePositionManager;
+
+    public struct ServerMessage : NetworkMessage
+    {
+        public int client_numberPlayers;
+    }
 
     #region Start & Stop Callbacks
 
@@ -48,7 +53,7 @@ public class SetupPlayer : NetworkBehaviour
     {
         base.OnStartClient();
         _playerInfo.ID = _id;
-        int aux = _id+1;
+        int aux = _id + 1;
         _playerInfo.Name = "Player " + aux;
         _playerInfo.CurrentColor = _carColor;
         _playerInfo.CurrentLap = 0;
@@ -62,7 +67,11 @@ public class SetupPlayer : NetworkBehaviour
     public override void OnStartLocalPlayer()
     {
         CmdSetDisplayName(_playerInfo.Name);
-        
+    }
+
+    /// <summary>Stop event, only called on client and host.</summary>
+    public override void OnStopClient()
+    {
     }
 
     #endregion
@@ -76,6 +85,13 @@ public class SetupPlayer : NetworkBehaviour
         _uiManager = FindObjectOfType<UIManager>();
     }
 
+    private void OnApplicationQuit()
+    {
+        _polePositionManager.RemovePlayer(_playerInfo);
+        Destroy(gameObject);
+        NetworkManager.singleton.StopClient();
+    }
+
     // Start is called before the first frame update
     void Start()
     {
@@ -85,32 +101,34 @@ public class SetupPlayer : NetworkBehaviour
             _playerController.OnSpeedChangeEvent += OnSpeedChangeEventHandler;
             _uiManager.myChangingPlayer = this;
             ConfigureCamera();
+            NetworkClient.RegisterHandler<ServerMessage>(OnServerNotification);
         }
     }
-    
 
     #region syncvar handling
-    void HandleDisplayColorUpdated(Color oldColor, Color newColor){
 
+    void HandleDisplayColorUpdated(Color oldColor, Color newColor)
+    {
         Debug.Log("Color Cambiado");
         _meshRenderer.materials[1].color = newColor;
-
     }
 
-    void HandleDisplayNameUpdated(string oldName, string newName){
-
+    void HandleDisplayNameUpdated(string oldName, string newName)
+    {
         Debug.Log("Nombre cambiado de " + oldName + " a " + newName);
         _nameText.text = newName;
-
-
     }
 
+    void OnServerNotification(ServerMessage message)
+    {
+        Debug.Log("[CLIENT] Número de jugadores en el Lobby -> " + message.client_numberPlayers);
+    }
 
-       [Server]
+    [Server]
     public void SetDisplayName(string newName)
     {
         int aux = _id + 1;
-        if(newName.Length < 2) _name = "Player " +aux;
+        if (newName.Length < 2) _name = "Player " + aux;
         else _name = newName;
     }
 
@@ -125,11 +143,10 @@ public class SetupPlayer : NetworkBehaviour
         return _name;
     }
 
-       public Color GetDisplayColor()
+    public Color GetDisplayColor()
     {
         return _carColor;
     }
-
 
     [Command]
     public void CmdSetDisplayName(string newName)
@@ -144,6 +161,7 @@ public class SetupPlayer : NetworkBehaviour
     }
 
     #endregion
+
     void OnSpeedChangeEventHandler(float speed)
     {
         _uiManager.UpdateSpeed((int) speed * 5); // 5 for visualization purpose (km/h)
@@ -154,21 +172,20 @@ public class SetupPlayer : NetworkBehaviour
         if (Camera.main != null) Camera.main.gameObject.GetComponent<CameraController>().m_Focus = this.gameObject;
     }
 
-
- #region Test
+    #region Test
 
     [ContextMenu("Cambiar nombre a dexaxi")]
     private void SetName()
     {
         CmdSetDisplayName("dexaxi");
     }
-    
+
 
     [ContextMenu("Cambiar Color a Verde")]
     private void SetColor()
     {
         CmdSetColor(Color.green);
     }
-    
+
     #endregion
 }

@@ -51,12 +51,6 @@ public class PlayerController : NetworkBehaviour
 
     public event OnSpeedChangeDelegate OnSpeedChangeEvent;
 
-    public struct ServerMessage : NetworkMessage
-    {
-        public int client_numberPlayers;
-        public string otherMessages;
-    }
-
     #endregion Variables
 
     #region Unity Callbacks
@@ -72,16 +66,6 @@ public class PlayerController : NetworkBehaviour
     public void Start()
     {
         if (isLocalPlayer) InitializeInput();
-
-        if (NetworkClient.active)
-        {
-            NetworkClient.RegisterHandler<ServerMessage>(OnServerNotification);
-        }
-    }
-
-    private void OnServerNotification(NetworkConnection conn , ServerMessage message)
-    {
-        Debug.Log("[CLIENT] Número de jugadores en el Lobby -> " + message.client_numberPlayers);
     }
 
     void InitializeInput()

@@ -27,12 +27,21 @@ public class MyNetworkManager : NetworkManager
         player = conn.identity.GetComponent<SetupPlayer>();
 
         Debug.Log("[SERVER] Se ha conectado: " + player.GetDisplayName());
+
+        SendNumberOfPlayers();
+    }
+
+    public override void OnServerDisconnect(NetworkConnection conn)
+    {
+        base.OnServerDisconnect(conn);
+        Debug.Log("[SERVER] Se ha desconectado: " + player.GetDisplayName());
+
         SendNumberOfPlayers();
     }
 
     private void SendNumberOfPlayers()
     {
-        PlayerController.ServerMessage message = new PlayerController.ServerMessage()
+        SetupPlayer.ServerMessage message = new SetupPlayer.ServerMessage()
         {
             client_numberPlayers = numPlayers
         };
