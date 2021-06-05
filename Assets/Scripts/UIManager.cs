@@ -6,12 +6,13 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using UnityEngine.InputSystem;
+
 public class UIManager : MonoBehaviour
 {
     public bool showGUI = true;
 
     private MyNetworkManager m_NetworkManager;
-    private PolePositionManager  _manager;
+    private PolePositionManager _manager;
 
 
     #region GUIBUTTONS
@@ -30,8 +31,8 @@ public class UIManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI currentPlayers;
 
 
-
-    [Header("Character Personalization + Ready Menu")] [SerializeField] private GameObject personalizationMenu;
+    [Header("Character Personalization + Ready Menu")] [SerializeField]
+    private GameObject personalizationMenu;
 
     [SerializeField] private Button ready;
     [SerializeField] private Button red;
@@ -44,24 +45,28 @@ public class UIManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI readyText;
 
 
-    [Header("In-Game HUD")] [SerializeField] private GameObject inGameHUD;
+    [Header("In-Game HUD")] [SerializeField]
+    private GameObject inGameHUD;
 
     [SerializeField] private TextMeshProUGUI textSpeed;
     [SerializeField] private TextMeshProUGUI textLaps;
     [SerializeField] private TextMeshProUGUI textPosition;
 
 
-    [Header("Pause Menu")] [SerializeField] private GameObject pauseHUD;
-    
+    [Header("Pause Menu")] [SerializeField]
+    private GameObject pauseHUD;
+
     [SerializeField] private Button resume;
     [SerializeField] private Button disconnect;
     [SerializeField] private Button quit;
 
 
-    [Header("Wrong Way Warning")] [SerializeField] private GameObject warning;
+    [Header("Wrong Way Warning")] [SerializeField]
+    private GameObject warning;
 
     #endregion
-    [HideInInspector]public SetupPlayer myChangingPlayer;
+
+    [HideInInspector] public SetupPlayer myChangingPlayer;
 
     [Header("CountDown")] [SerializeField] private GameObject countDown;
 
@@ -73,26 +78,21 @@ public class UIManager : MonoBehaviour
 
         _manager = FindObjectOfType<PolePositionManager>();
 
-        _name.placeholder.color =  red.GetComponent<Image>().color;
-        _name.textComponent.color= red.GetComponent<Image>().color;
+        _name.placeholder.color = red.GetComponent<Image>().color;
+        _name.textComponent.color = red.GetComponent<Image>().color;
         pauseHUD.SetActive(false);
         warning.SetActive(false);
     }
-   
-    
+
+
     private void Update()
     {
         textPosition.text = _manager.GetRaceProgress();
-
     }
-
-
-
 
 
     private void Start()
     {
-
         buttonHost.onClick.AddListener(() => StartHost());
         buttonClient.onClick.AddListener(() => StartClient());
         buttonServer.onClick.AddListener(() => StartServer());
@@ -112,88 +112,76 @@ public class UIManager : MonoBehaviour
         ActivateMainMenu();
     }
 
-    public void Pause(){
-
+    public void Pause()
+    {
         pauseHUD.SetActive(true);
-
     }
-    private void Resume(){
 
+    private void Resume()
+    {
         pauseHUD.SetActive(false);
-
     }
 
-    private void Disconnect(){
-
+    private void Disconnect()
+    {
         NetworkManager.singleton.StopClient();
         NetworkManager.singleton.StopHost();
-        
-
     }
 
-    private void Quit(){
-
+    private void Quit()
+    {
         Application.Quit();
-
     }
 
-  
-    private void SetColor(Color color){
 
+    private void SetColor(Color color)
+    {
         _name.placeholder.color = color;
-        _name.textComponent.color= color;
-        if(myChangingPlayer != null) myChangingPlayer.CmdSetColor(color);
-
+        _name.textComponent.color = color;
+        if (myChangingPlayer != null) myChangingPlayer.CmdSetColor(color);
     }
 
     private void Ready()
     {
-        
+        myChangingPlayer.CmdSetReday();
         readyText.text = "Yes";
         ready.gameObject.GetComponent<Image>().color = Color.green;
-        if(myChangingPlayer!=null) {
-        myChangingPlayer.CmdSetDisplayName(_name.textComponent.text);
-         }
-        ActivateInGameHUD();
+        if (myChangingPlayer != null)
+        {
+            myChangingPlayer.CmdSetDisplayName(_name.textComponent.text);
+        }
     }
-
-    public void StartCountDown()
-    {
-        ActivateCountDown();
-    }
-
-
-
+    
     public void UpdateSpeed(int speed)
     {
         textSpeed.text = "Speed " + speed + " Km/h";
     }
 
-    public void UpdateRaceRank(string rank) {
+    public void UpdateRaceRank(string rank)
+    {
         textPosition.text = rank;
     }
 
-     public void UpdateCurrentLap(int lap, int totalLaps) {
+    public void UpdateCurrentLap(int lap, int totalLaps)
+    {
         textLaps.text = "LAP: " + lap + "/" + totalLaps;
     }
-    public void UpdatePlayerText(int i){
 
+    public void UpdatePlayerText(int i)
+    {
         currentPlayers.text = i + "/4";
-
     }
 
     public void UpdateWarning(bool b)
     {
-
         warning.SetActive(b);
-
     }
 
     public void UpdateTextCountDown(string newText)
     {
         numbersInCountDown.text = newText;
     }
-    
+
 
     private void ActivateMainMenu()
     {
@@ -211,19 +199,21 @@ public class UIManager : MonoBehaviour
         playMenu.SetActive(false);
         inGameHUD.SetActive(true);
         countDown.SetActive(false);
+        
+        myChangingPlayer.RpcActivateMovement();
     }
 
-    private void ActivatePersonalizationMenu(){
-        
+    private void ActivatePersonalizationMenu()
+    {
         mainMenu.SetActive(false);
         playMenu.SetActive(false);
         personalizationMenu.SetActive(true);
         inGameHUD.SetActive(false);
         countDown.SetActive(false);
-
     }
-    private void ActivatePlayMenu(){
 
+    private void ActivatePlayMenu()
+    {
         mainMenu.SetActive(false);
         playMenu.SetActive(true);
         personalizationMenu.SetActive(false);
@@ -231,7 +221,7 @@ public class UIManager : MonoBehaviour
         countDown.SetActive(false);
     }
 
-    private void ActivateCountDown()
+    public void ActivateCountDown()
     {
         mainMenu.SetActive(false);
         playMenu.SetActive(false);
@@ -240,23 +230,20 @@ public class UIManager : MonoBehaviour
         countDown.SetActive(true);
     }
 
-    private void Play(){
-        
-
+    private void Play()
+    {
         NetworkClient.AddPlayer();
         ActivatePersonalizationMenu();
-
     }
 
-    private void Spectate(){
-
+    private void Spectate()
+    {
         Debug.Log("Not Implemented!");
     }
 
-    private void Train(){
-
+    private void Train()
+    {
         Debug.Log("Not Implemented!");
-
     }
 
     private void StartHost()
@@ -277,8 +264,6 @@ public class UIManager : MonoBehaviour
         m_NetworkManager.StartServer();
         mainMenu.SetActive(false);
         MeshRenderer[] all = FindObjectsOfType<MeshRenderer>();
-        foreach(MeshRenderer m in all) m.enabled = false;
+        foreach (MeshRenderer m in all) m.enabled = false;
     }
-
-    
 }

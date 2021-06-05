@@ -12,16 +12,26 @@ public class PolePositionManager : NetworkBehaviour
     private MyNetworkManager _networkManager;
 
     private List<PlayerInfo> _players = new List<PlayerInfo>();
+
     private CircuitController _circuitController;
     private GameObject[] _debuggingSpheres;
 
     private UIManager _uiManager;
-    
+
     private Timer _timer;
+
+    [SyncVar(hook = nameof(HandleIsRaceInProgress))]
+    private bool isRaceInProgress = false;
+
+    [SerializeField] private bool isClientRaceInProgress;
+
+    [SyncVar(hook = nameof(HandleActiveMovement))]
+    public bool isActiveMovement = false;
+
+    [SerializeField] public bool isActiveClientMovement;
 
     private void Awake()
     {
-
         if (_networkManager == null) _networkManager = FindObjectOfType<MyNetworkManager>();
         if (_circuitController == null) _circuitController = FindObjectOfType<CircuitController>();
         if (_uiManager == null) _uiManager = FindObjectOfType<UIManager>();
@@ -40,12 +50,24 @@ public class PolePositionManager : NetworkBehaviour
     {
         _uiManager.UpdateRaceRank(GetRaceProgress());
 
+        if (!isClientRaceInProgress && ArePlayersReady() && _players.Count >= 2)
+        {
+            ActiveRace();
+            StarCountDownUI();
+        }
     }
+    
 
     public void AddPlayer(PlayerInfo player)
     {
-        _players.Add(player);
-
+        if (_players.Count < 4)
+        {
+            _players.Add(player);
+        }
+        else
+        {
+            Debug.Log("CARRERA LLENA");
+        }
     }
 
     public void RemovePlayer(PlayerInfo player)
@@ -89,7 +111,6 @@ public class PolePositionManager : NetworkBehaviour
         string raceOrder = "";
         foreach (var player in _players)
         {
-
             if (player != null)
             {
                 raceOrder += player.Name + " ";
@@ -98,7 +119,7 @@ public class PolePositionManager : NetworkBehaviour
 
         return raceOrder;
     }
-    
+
     float ComputeCarArcLength(int id)
     {
         // Compute the projection of the car position to the closest circuit 
@@ -129,29 +150,66 @@ public class PolePositionManager : NetworkBehaviour
 
     public void StarCountDownUI()
     {
-        _uiManager.StartCountDown();
+        _uiManager.ActivateCountDown();
 
-        ChangeNumbersCountDown();
-        
-        _uiManager.ActivateInGameHUD();
-
+        StartCoroutine(ChangeNumbersCountDown());
     }
 
     IEnumerator ChangeNumbersCountDown()
     {
         yield return new WaitForSeconds(1);
+
+        _uiManager.UpdateTextCountDown("3");
         
+        yield return new WaitForSeconds(1);
+
         _uiManager.UpdateTextCountDown("2");
-        
+
         yield return new WaitForSeconds(1);
-        
+
         _uiManager.UpdateTextCountDown("1");
-        
+
         yield return new WaitForSeconds(1);
-        
+
         _uiManager.UpdateTextCountDown("GO");
+        
+        ActiveMovement();
+        _uiManager.ActivateInGameHUD();
+    }
+
+    [Server]
+    private bool ArePlayersReady()
+    {
+        int count = 0;
+        for (int i = 0; i < _players.Count; i++)
+        {
+            Debug.Log(_players[i].IsReady);
+           if(_players[i].IsReady) count++;
+        }
+
+        if (count > _players.Count / 2) return true;
+        else return false;
+    }
+
+    [Server]
+    private void ActiveRace()
+    {
+        isRaceInProgress = true;
+    }
+
+    private void HandleIsRaceInProgress(bool oldActiveRace, bool newActiveRace)
+    {
+        isClientRaceInProgress = newActiveRace;
+    }
+
+    [Server]
+    private void ActiveMovement()
+    {
+        isActiveMovement = true;
     }
     
-   
-    
+    private void HandleActiveMovement(bool oldActiveMovement, bool newActiveMovement)
+    {
+        isActiveClientMovement = newActiveMovement;
+    }
 }

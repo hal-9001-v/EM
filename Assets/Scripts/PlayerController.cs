@@ -74,6 +74,7 @@ public class PlayerController : NetworkBehaviour
     {
         m_Rigidbody = GetComponent<Rigidbody>();
         m_PlayerInfo = GetComponent<PlayerInfo>();
+        
     }
 
 
@@ -167,7 +168,7 @@ public class PlayerController : NetworkBehaviour
     [Command]
     void CmdApplyMovement(float steering, float acceleration, bool brake)
     {
-       // if (!_canMove) return;
+        if (!m_PlayerInfo.CanMove) return;
         ApplyMovement(steering, acceleration, brake);
     }
 
