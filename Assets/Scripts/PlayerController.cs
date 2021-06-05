@@ -69,9 +69,9 @@ public class PlayerController : NetworkBehaviour
     public void Start()
     {
         if (isLocalPlayer) InitializeInput();
-
     }
-        void InitializeInput()
+
+    void InitializeInput()
         {
             _input = new BasicPlayer();
 

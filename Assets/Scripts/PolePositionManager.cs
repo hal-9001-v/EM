@@ -44,6 +44,11 @@ public class PolePositionManager : MonoBehaviour
 
     }
 
+    public void RemovePlayer(PlayerInfo player)
+    {
+        _players.Remove(player);
+    }
+
     private class PlayerInfoComparer : Comparer<PlayerInfo>
     {
         float[] _arcLengths;
@@ -69,7 +74,10 @@ public class PolePositionManager : MonoBehaviour
 
         for (int i = 0; i < _players.Count; ++i)
         {
-            arcLengths[i] = ComputeCarArcLength(i);
+            if (_players[i] != null)
+            {
+                arcLengths[i] = ComputeCarArcLength(i);
+            }
         }
 
         _players.Sort(new PlayerInfoComparer(arcLengths));
@@ -77,7 +85,11 @@ public class PolePositionManager : MonoBehaviour
         string raceOrder = "";
         foreach (var player in _players)
         {
-            raceOrder += player.Name + " ";
+
+            if (player != null)
+            {
+                raceOrder += player.Name + " ";
+            }
         }
 
         return raceOrder;
