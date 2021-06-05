@@ -88,8 +88,6 @@ public class UIManager : MonoBehaviour
 
 
 
-
-
     private void Start()
     {
 

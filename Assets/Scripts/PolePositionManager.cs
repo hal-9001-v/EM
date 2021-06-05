@@ -45,7 +45,7 @@ public class PolePositionManager : NetworkBehaviour
     public void AddPlayer(PlayerInfo player)
     {
         _players.Add(player);
-
+      
     }
 
     public void RemovePlayer(PlayerInfo player)
@@ -113,7 +113,6 @@ public class PolePositionManager : NetworkBehaviour
             this._circuitController.ComputeClosestPointArcLength(carPos, out segIdx, out carProj, out carDist);
 
         this._debuggingSpheres[id].transform.position = carProj;
-
         if (this._players[id].CurrentLap == 0)
         {
             minArcL -= _circuitController.CircuitLength;

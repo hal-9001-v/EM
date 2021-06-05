@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
+using UnityEngine.InputSystem;
 
 /*
 	Documentation: https://mirror-networking.com/docs/Guides/NetworkBehaviour.html
@@ -10,7 +11,7 @@ using Mirror;
 
 public class PlayerController : NetworkBehaviour
 {
-    private int _startCollider = 0;
+    private GameObject _startCollider;
 
     [SyncVar(hook = nameof(HandleCurrentCheckPointCheck))]
     private int _currentCheckPoint;
@@ -21,7 +22,17 @@ public class PlayerController : NetworkBehaviour
     [SyncVar(hook = nameof(HandleWrongWayCheck))]
     private bool _wrongWay;
 
+    [SyncVar(hook = nameof(HandleLastChekcpointTransform))]
+    private Vector3 _myFixPos;
+
     [SyncVar] private bool _canMove = false;
+
+
+    Timer t ;
+    private double teleportThreshhold = 5;
+    private double currentThreshhold = 0;
+    private bool isCounting = false;
+    private double startingThreshholdTime;
 
     #region Variables
 
@@ -38,12 +49,11 @@ public class PlayerController : NetworkBehaviour
     private float _inputAcceleration { get; set; }
     private float _inputSteering { get; set; }
     private bool _inputBrake { get; set; }
-    public bool _inputPauseMenu { get; set; }
 
 
     private PlayerInfo m_PlayerInfo;
     public UIManager m_UImanager;
-
+    public SetupPlayer m_SetupPlayer;
     private Rigidbody m_Rigidbody;
     private float m_SteerHelper = 0.8f;
 
@@ -74,12 +84,18 @@ public class PlayerController : NetworkBehaviour
     {
         m_Rigidbody = GetComponent<Rigidbody>();
         m_PlayerInfo = GetComponent<PlayerInfo>();
+        m_SetupPlayer= GetComponent<SetupPlayer>();
+        t = FindObjectOfType<Timer>();
+        _startCollider = GameObject.Find("0");
+
     }
 
 
     private void Start()
     {
         if (isLocalPlayer) m_UImanager = FindObjectOfType<UIManager>();
+        if (isLocalPlayer) CmdCheckPointCheck(_startCollider.name);
+
     }
 
     public void InitializeInput(BasicPlayer _input)
@@ -96,6 +112,7 @@ public class PlayerController : NetworkBehaviour
 
         _input.PC.Brake.canceled += ctx => { _inputBrake = false; };
 
+        
 
         _input.Enable();
     }
@@ -107,8 +124,11 @@ public class PlayerController : NetworkBehaviour
 
         m_UImanager.UpdateCurrentLap(_currentLap, 4);
         m_UImanager.UpdateWarning(_wrongWay);
+
+
     }
 
+    [Server]
     void ApplyMovement(float inputSteering, float inputAcceleration, bool inputBrake)
     {
         float steering = maxSteeringAngle * inputSteering;
@@ -167,8 +187,17 @@ public class PlayerController : NetworkBehaviour
     [Command]
     void CmdApplyMovement(float steering, float acceleration, bool brake)
     {
+
        // if (!_canMove) return;
         ApplyMovement(steering, acceleration, brake);
+         if(isServer) {
+            //Debug.Log("Your current server time is " + t.GetCurrentServerTime() + " and the threshold is " + currentThreshhold + " and you are currently counting " + isCounting);
+            if((m_Rigidbody.velocity.magnitude < 0.5) ) CalculateTeleport();
+            else{
+                isCounting = false;
+                currentThreshhold = t.GetCurrentServerTime()+teleportThreshhold;
+            }
+        }
     }
 
     [Client]
@@ -181,7 +210,52 @@ public class PlayerController : NetworkBehaviour
     {
         CmdApplyMovement(_inputSteering, _inputAcceleration, _inputBrake);
         //ClientApplyMovement();
+
+    
     }
+
+    [Server]
+    private void CalculateTeleport(){
+        if(!isCounting)
+            {
+                isCounting = true;
+                startingThreshholdTime = t.GetCurrentServerTime();
+                currentThreshhold =startingThreshholdTime+teleportThreshhold;
+                
+            }
+            
+
+            if(t.GetCurrentServerTime() >= currentThreshhold){
+
+                int lookAux = GetNextCheckPoint();
+                int posAux = lookAux-1;
+                GameObject temp = GameObject.Find(posAux.ToString());
+                GameObject look = GameObject.Find(lookAux.ToString());
+                Teleport(temp, look);
+                currentThreshhold = t.GetCurrentServerTime()+30;
+                isCounting = false;
+
+            }
+
+    }
+
+    
+    private void Teleport(GameObject temp, GameObject look){
+
+
+            gameObject.transform.position = temp.transform.position;
+            gameObject.transform.rotation = Quaternion.Euler(new Vector3(gameObject.transform.rotation.x, 0, gameObject.transform.rotation.z));
+            gameObject.transform.LookAt(look.transform);
+        
+
+    }
+
+    private int GetNextCheckPoint (){
+
+        return _currentCheckPoint;
+
+    }
+
 
     #region Rpcs
 
@@ -283,7 +357,7 @@ public class PlayerController : NetworkBehaviour
 
     public int GetEnd()
     {
-        return _startCollider;
+        return int.Parse(_startCollider.name);
     }
 
 
@@ -304,6 +378,11 @@ public class PlayerController : NetworkBehaviour
         Debug.Log("Wrong Way!");
         m_PlayerInfo.WrongWay = newBool;
     }
+    private void HandleLastChekcpointTransform(Vector3 oldPos, Vector3 newPos)
+    {
+        Debug.Log("Position Reset!");
+
+    }
 
 
     [Command]
@@ -312,6 +391,7 @@ public class PlayerController : NetworkBehaviour
         ServerCheckPointCheck(name);
     }
 
+  
 
     [Server]
     public void ServerCheckPointCheck(string name)
@@ -319,8 +399,7 @@ public class PlayerController : NetworkBehaviour
         if (int.Parse(name) == _currentCheckPoint)
         {
             Debug.Log("Current Collider = " + name);
-
-
+            
             if (_currentLap != 0) _wrongWay = false;
 
             //Check if next collider is last collider 
@@ -346,18 +425,18 @@ public class PlayerController : NetworkBehaviour
         }
         else
         {
-            if (_currentLap != 0) _wrongWay = true;
+            if (_currentLap != 0 && _currentCheckPoint != 1) _wrongWay = true;
             Debug.Log("Wrong Way!!!!");
         }
     }
 
+  
     private void OnTriggerEnter(Collider other)
     {
         //If i collide with trigger -> checkpoint && it's name is my next collideer
         if (other.tag == "ControlCollider")
         {
             string s = other.name;
-
             if (isLocalPlayer)
             {
                 CmdCheckPointCheck(s);
