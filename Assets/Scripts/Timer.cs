@@ -7,7 +7,7 @@ using UnityEngine;
 public class Timer : NetworkBehaviour
 {
     [SyncVar(hook = nameof(HandleCurrentTime))] [SerializeField] private double _currentTime = 0;
-    [SerializeField] public double _currentClientTime = 0;
+    [SerializeField] private double _currentClientTime = 0;
     
     private void HandleCurrentTime(double oldTime, double newCurrentTime)
     {
@@ -29,6 +29,17 @@ public class Timer : NetworkBehaviour
     private void Update()
     {
         UpdateCurrentTime();
+    }
+
+    public double GetCurrentClientTime(){
+
+        return _currentTime;
+
+    }
+    public double GetCurrentServerTime(){
+
+        return _currentTime;
+
     }
     
     
