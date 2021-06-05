@@ -10,9 +10,11 @@ using Mirror;
 
 public class PlayerController : NetworkBehaviour
 {
-    [SyncVar] private int _startCollider = 0;
-    
-    
+    private int _startCollider = 0;
+    [SyncVar (hook = nameof(HandleCurrentCheckPointCheck))] private int _currentCheckPoint;
+    [SyncVar (hook = nameof(HandleCurrentLapCheck))] private int _currentLap;
+    [SyncVar (hook = nameof(HandleWrongWayCheck))] private bool _wrongWay;
+
     #region Variables
     [Header("Movement")] public List<AxleInfo> axleInfos;
     public float forwardMotorTorque = 100000;
@@ -31,6 +33,7 @@ public class PlayerController : NetworkBehaviour
 
 
     private PlayerInfo m_PlayerInfo;
+    public UIManager m_UImanager;
 
     private Rigidbody m_Rigidbody;
     private float m_SteerHelper = 0.8f;
@@ -67,7 +70,9 @@ public class PlayerController : NetworkBehaviour
     }
 
   
-
+    private void Start() {
+        if(isLocalPlayer) m_UImanager = FindObjectOfType<UIManager>();
+    }
 
     public void InitializeInput(BasicPlayer _input)
         {
@@ -99,11 +104,15 @@ public class PlayerController : NetworkBehaviour
         }
 
 
-
-
+   
         public void Update()
         {
+            
             Speed = m_Rigidbody.velocity.magnitude;
+            
+            m_UImanager.UpdateCurrentLap(_currentLap, 4);
+            m_UImanager.UpdateWarning(_wrongWay);
+
         }
 
         void ApplyMovement(float inputSteering, float inputAcceleration, bool inputBrake)
@@ -290,35 +299,89 @@ public class PlayerController : NetworkBehaviour
 
         }
         
-        private void OnTriggerEnter(Collider other) {
-            if(other.tag == "ControlCollider" && int.Parse(other.name) == m_PlayerInfo.NextCollider) {
-                
-                    if(m_PlayerInfo.NextCollider == GetEnd()){
 
-                    m_PlayerInfo.CurrentLap++;
-                    Debug.Log("Current Lap = " + m_PlayerInfo.CurrentLap);
+        private void HandleCurrentCheckPointCheck(int oldCheckPoint, int newCheckPoint){
 
-                    }
-                LineRenderer _circuitPath = FindObjectOfType<LineRenderer>();
-               int num = CircuitController.GetColliderNumber(_circuitPath.positionCount);
+            Debug.Log("My player info checkpoint is " + m_PlayerInfo.NextCollider);
+            m_PlayerInfo.NextCollider = newCheckPoint;
+           
+        }
+
+        private void HandleCurrentLapCheck(int oldLap, int newLap){
+
+            Debug.Log("My player info current lap is " + m_PlayerInfo.CurrentLap);
+            m_PlayerInfo.CurrentLap = newLap;
+
+        }
+
+        private void HandleWrongWayCheck(bool oldBool, bool newBool){
+
+            Debug.Log("Wrong Way!");
+            m_PlayerInfo.WrongWay = newBool;
+
+        }
+
+
+        [Command]
+        public void CmdCheckPointCheck(string name){
+
+            ServerCheckPointCheck(name);
+        }
+
+
+        [Server]
+        public void ServerCheckPointCheck(string name){
+
+           
+                if(int.Parse(name) == _currentCheckPoint){
+                    Debug.Log("Current Collider = " + name);
+
+                    
+                    if(_currentLap != 0) _wrongWay = false;
+
+                    //Check if next collider is last collider 
+                    if(_currentCheckPoint == GetEnd()){
+                        
+                        //Update laps
+                        _currentLap++;
+                        Debug.Log("Current Lap = " + _currentLap);
+
+                        }
+                    
+                    //Get total chekpoints
+                    LineRenderer _circuitPath = FindObjectOfType<LineRenderer>();
+                    int num = CircuitController.GetColliderNumber(_circuitPath.positionCount);
+
+                    //if next checkpoint is the last checkpoint, the next collider becomes first checkpoint
+                    if(_currentCheckPoint == (num-1))
+                    {
+                        _currentCheckPoint = 0;
+                        
+                    }//Else nex checkpoint = currentcheckpooint++ 
+                    else _currentCheckPoint = int.Parse(name) +1;
+
+                    Debug.Log("Next Collider = " + _currentCheckPoint);
+      
+                } else {
+                    if(_currentLap != 0) _wrongWay = true;
+                    Debug.Log("Wrong Way!!!!");
+                    
+                }
                
-                if(m_PlayerInfo.NextCollider == (num-1))
-                {
-                    
-                    m_PlayerInfo.NextCollider = 0;
-                    
-                } else m_PlayerInfo.NextCollider = int.Parse(other.name) +1;
 
-                
-                Debug.Log("Next Collider = " + m_PlayerInfo.NextCollider);
-                
-                
+        }
 
-              
-
+        private void OnTriggerEnter(Collider other) {
+            
+            
+            //If i collide with trigger -> checkpoint && it's name is my next collideer
+            if(other.tag == "ControlCollider") {
+                string s = other.name;
                 
-
-            }            
+                if(isLocalPlayer) {
+                    CmdCheckPointCheck(s);
+                }
+            }
         }
 
     }

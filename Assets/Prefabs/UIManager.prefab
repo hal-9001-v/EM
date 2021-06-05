@@ -4556,6 +4556,7 @@ MonoBehaviour:
   quit: {fileID: 2573626807814399464}
   warning: {fileID: 7285668369771310915}
   myChangingPlayer: {fileID: 0}
+  myPlayerInfo: {fileID: 0}
 --- !u!1 &6415909394048335348
 GameObject:
   m_ObjectHideFlags: 0

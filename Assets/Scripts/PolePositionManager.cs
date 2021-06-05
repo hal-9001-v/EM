@@ -18,10 +18,11 @@ public class PolePositionManager : MonoBehaviour
 
     private void Awake()
     {
+
         if (_networkManager == null) _networkManager = FindObjectOfType<MyNetworkManager>();
         if (_circuitController == null) _circuitController = FindObjectOfType<CircuitController>();
         if (_uiManager == null) _uiManager = FindObjectOfType<UIManager>();
-
+        
 
         _debuggingSpheres = new GameObject[_networkManager.maxConnections];
         for (int i = 0; i < _networkManager.maxConnections; ++i)
