@@ -99,7 +99,7 @@ public class CircuitController : MonoBehaviour
 
             carVec = (posIn - _pathPos[i]);
             float dotProd = Vector3.Dot(carVec, pathVec);
-            Debug.Log(dotProd);
+            //Debug.Log(dotProd);
 
             if (dotProd < 0)
                 continue;

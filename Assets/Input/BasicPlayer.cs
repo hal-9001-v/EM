@@ -27,6 +27,14 @@ public class @BasicPlayer : IInputActionCollection, IDisposable
                     ""interactions"": """"
                 },
                 {
+                    ""name"": ""Camera"",
+                    ""type"": ""Button"",
+                    ""id"": ""3d382b10-8b82-4386-8d36-482cc5042d15"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """"
+                },
+                {
                     ""name"": ""Brake"",
                     ""type"": ""Button"",
                     ""id"": ""770f1879-3cfe-4890-ab88-a7b9ae647940"",
@@ -175,6 +183,39 @@ public class @BasicPlayer : IInputActionCollection, IDisposable
                     ""action"": ""Pause"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""1D Axis"",
+                    ""id"": ""391ca701-1f10-43e2-90f0-481cffc983d0"",
+                    ""path"": ""1DAxis(whichSideWins=1)"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Car"",
+                    ""action"": ""Camera"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""Negative"",
+                    ""id"": ""66b4e157-5535-45d6-bb59-31b56ba9b47c"",
+                    ""path"": ""<Keyboard>/a"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Car"",
+                    ""action"": ""Camera"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""Positive"",
+                    ""id"": ""6d865477-f18f-4453-8616-15fcb0f8fed9"",
+                    ""path"": ""<Keyboard>/d"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Car"",
+                    ""action"": ""Camera"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
                 }
             ]
         }
@@ -196,6 +237,7 @@ public class @BasicPlayer : IInputActionCollection, IDisposable
         // PC
         m_PC = asset.FindActionMap("PC", throwIfNotFound: true);
         m_PC_Move = m_PC.FindAction("Move", throwIfNotFound: true);
+        m_PC_Camera = m_PC.FindAction("Camera", throwIfNotFound: true);
         m_PC_Brake = m_PC.FindAction("Brake", throwIfNotFound: true);
         m_PC_Pause = m_PC.FindAction("Pause", throwIfNotFound: true);
     }
@@ -248,6 +290,7 @@ public class @BasicPlayer : IInputActionCollection, IDisposable
     private readonly InputActionMap m_PC;
     private IPCActions m_PCActionsCallbackInterface;
     private readonly InputAction m_PC_Move;
+    private readonly InputAction m_PC_Camera;
     private readonly InputAction m_PC_Brake;
     private readonly InputAction m_PC_Pause;
     public struct PCActions
@@ -255,6 +298,7 @@ public class @BasicPlayer : IInputActionCollection, IDisposable
         private @BasicPlayer m_Wrapper;
         public PCActions(@BasicPlayer wrapper) { m_Wrapper = wrapper; }
         public InputAction @Move => m_Wrapper.m_PC_Move;
+        public InputAction @Camera => m_Wrapper.m_PC_Camera;
         public InputAction @Brake => m_Wrapper.m_PC_Brake;
         public InputAction @Pause => m_Wrapper.m_PC_Pause;
         public InputActionMap Get() { return m_Wrapper.m_PC; }
@@ -269,6 +313,9 @@ public class @BasicPlayer : IInputActionCollection, IDisposable
                 @Move.started -= m_Wrapper.m_PCActionsCallbackInterface.OnMove;
                 @Move.performed -= m_Wrapper.m_PCActionsCallbackInterface.OnMove;
                 @Move.canceled -= m_Wrapper.m_PCActionsCallbackInterface.OnMove;
+                @Camera.started -= m_Wrapper.m_PCActionsCallbackInterface.OnCamera;
+                @Camera.performed -= m_Wrapper.m_PCActionsCallbackInterface.OnCamera;
+                @Camera.canceled -= m_Wrapper.m_PCActionsCallbackInterface.OnCamera;
                 @Brake.started -= m_Wrapper.m_PCActionsCallbackInterface.OnBrake;
                 @Brake.performed -= m_Wrapper.m_PCActionsCallbackInterface.OnBrake;
                 @Brake.canceled -= m_Wrapper.m_PCActionsCallbackInterface.OnBrake;
@@ -282,6 +329,9 @@ public class @BasicPlayer : IInputActionCollection, IDisposable
                 @Move.started += instance.OnMove;
                 @Move.performed += instance.OnMove;
                 @Move.canceled += instance.OnMove;
+                @Camera.started += instance.OnCamera;
+                @Camera.performed += instance.OnCamera;
+                @Camera.canceled += instance.OnCamera;
                 @Brake.started += instance.OnBrake;
                 @Brake.performed += instance.OnBrake;
                 @Brake.canceled += instance.OnBrake;
@@ -304,6 +354,7 @@ public class @BasicPlayer : IInputActionCollection, IDisposable
     public interface IPCActions
     {
         void OnMove(InputAction.CallbackContext context);
+        void OnCamera(InputAction.CallbackContext context);
         void OnBrake(InputAction.CallbackContext context);
         void OnPause(InputAction.CallbackContext context);
     }

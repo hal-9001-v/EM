@@ -2,8 +2,8 @@
 using Mirror;
 using UnityEngine;
 
-//public class PolePositionManager : NetworkBehaviour
-public class PolePositionManager : MonoBehaviour
+//public class PolePositionManager : MonoBehaviour
+public class PolePositionManager : NetworkBehaviour
 {
     public int numPlayers;
 
@@ -11,6 +11,7 @@ public class PolePositionManager : MonoBehaviour
     private MyNetworkManager _networkManager;
 
     private List<PlayerInfo> _players = new List<PlayerInfo>();
+
     private CircuitController _circuitController;
     private GameObject[] _debuggingSpheres;
 
@@ -34,19 +35,19 @@ public class PolePositionManager : MonoBehaviour
     private void Update()
     {
         _uiManager.UpdateRaceRank(GetRaceProgress());
-
     }
 
     public void AddPlayer(PlayerInfo player)
     {
         _players.Add(player);
-
-
     }
+
+
 
     public void RemovePlayer(PlayerInfo player)
     {
         _players.Remove(player);
+
     }
 
     private class PlayerInfoComparer : Comparer<PlayerInfo>
@@ -94,7 +95,7 @@ public class PolePositionManager : MonoBehaviour
 
         return raceOrder;
     }
-    
+
     float ComputeCarArcLength(int id)
     {
         // Compute the projection of the car position to the closest circuit 

@@ -28,8 +28,6 @@ public class SetupPlayer : NetworkBehaviour
     private PlayerInfo _playerInfo;
     private PolePositionManager _polePositionManager;
 
-    
-
     public struct ServerMessage : NetworkMessage
     {
         public int client_numberPlayers;
@@ -61,6 +59,7 @@ public class SetupPlayer : NetworkBehaviour
         _playerInfo.CurrentColor = new Color(0.91f,0.33f,0.33f,1);
         _playerInfo.CurrentLap = 0;
         _polePositionManager.AddPlayer(_playerInfo);
+
     }
 
     /// <summary>
