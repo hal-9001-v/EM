@@ -15,6 +15,7 @@ public class UIManager : MonoBehaviour
 
 
     #region GUIBUTTONS
+
     [Header("Main Menu")] [SerializeField] private GameObject mainMenu;
     [SerializeField] private Button buttonHost;
     [SerializeField] private Button buttonClient;
@@ -62,12 +63,16 @@ public class UIManager : MonoBehaviour
     #endregion
     [HideInInspector]public SetupPlayer myChangingPlayer;
 
+    [Header("CountDown")] [SerializeField] private GameObject countDown;
+
+    [SerializeField] private TextMeshProUGUI numbersInCountDown;
+
     private void Awake()
     {
         m_NetworkManager = FindObjectOfType<MyNetworkManager>();
 
         _manager = FindObjectOfType<PolePositionManager>();
-        
+
         _name.placeholder.color =  red.GetComponent<Image>().color;
         _name.textComponent.color= red.GetComponent<Image>().color;
         pauseHUD.SetActive(false);
@@ -141,15 +146,20 @@ public class UIManager : MonoBehaviour
 
     }
 
-    private void Ready(){
-
+    private void Ready()
+    {
+        
         readyText.text = "Yes";
         ready.gameObject.GetComponent<Image>().color = Color.green;
         if(myChangingPlayer!=null) {
         myChangingPlayer.CmdSetDisplayName(_name.textComponent.text);
          }
         ActivateInGameHUD();
-        
+    }
+
+    public void StartCountDown()
+    {
+        ActivateCountDown();
     }
 
 
@@ -175,6 +185,9 @@ public class UIManager : MonoBehaviour
         
         warning.SetActive(b);
 
+    public void UpdateTextCountDown(string newText)
+    {
+        numbersInCountDown.text = newText;
     }
     
 
@@ -184,6 +197,7 @@ public class UIManager : MonoBehaviour
         inGameHUD.SetActive(false);
         playMenu.SetActive(false);
         personalizationMenu.SetActive(false);
+        countDown.SetActive(false);
     }
 
     public void ActivateInGameHUD()
@@ -192,6 +206,7 @@ public class UIManager : MonoBehaviour
         personalizationMenu.SetActive(false);
         playMenu.SetActive(false);
         inGameHUD.SetActive(true);
+        countDown.SetActive(false);
     }
 
     private void ActivatePersonalizationMenu(){
@@ -200,6 +215,7 @@ public class UIManager : MonoBehaviour
         playMenu.SetActive(false);
         personalizationMenu.SetActive(true);
         inGameHUD.SetActive(false);
+        countDown.SetActive(false);
 
     }
     private void ActivatePlayMenu(){
@@ -208,7 +224,16 @@ public class UIManager : MonoBehaviour
         playMenu.SetActive(true);
         personalizationMenu.SetActive(false);
         inGameHUD.SetActive(false);
+        countDown.SetActive(false);
+    }
 
+    private void ActivateCountDown()
+    {
+        mainMenu.SetActive(false);
+        playMenu.SetActive(false);
+        personalizationMenu.SetActive(false);
+        inGameHUD.SetActive(false);
+        countDown.SetActive(true);
     }
 
     private void Play(){
@@ -250,4 +275,6 @@ public class UIManager : MonoBehaviour
         MeshRenderer[] all = FindObjectsOfType<MeshRenderer>();
         foreach(MeshRenderer m in all) m.enabled = false;
     }
+
+    
 }

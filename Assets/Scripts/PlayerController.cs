@@ -10,12 +10,16 @@ using Mirror;
 
 public class PlayerController : NetworkBehaviour
 {
+
     private int _startCollider = 0;
     [SyncVar (hook = nameof(HandleCurrentCheckPointCheck))] private int _currentCheckPoint;
     [SyncVar (hook = nameof(HandleCurrentLapCheck))] private int _currentLap;
     [SyncVar (hook = nameof(HandleWrongWayCheck))] private bool _wrongWay;
 
-    #region Variables
+    [SyncVar] private int _startCollider = 0;
+    [SyncVar] private bool _canMove = false;
+    
+        #region Variables
     [Header("Movement")] public List<AxleInfo> axleInfos;
     public float forwardMotorTorque = 100000;
     public float backwardMotorTorque = 50000;
@@ -174,6 +178,7 @@ public class PlayerController : NetworkBehaviour
         [Command]
         void CmdApplyMovement(float steering, float acceleration, bool brake)
         {
+            if (!_canMove) return;
             ApplyMovement(steering, acceleration, brake);
         }
 
@@ -382,6 +387,8 @@ public class PlayerController : NetworkBehaviour
                     CmdCheckPointCheck(s);
                 }
             }
+                
+            }            
         }
 
-    }
+}

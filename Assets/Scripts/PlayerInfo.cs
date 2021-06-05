@@ -15,10 +15,10 @@ public class PlayerInfo : MonoBehaviour
 
     public Color CurrentColor {get;set;}
     public int  NextCollider {get;set;}
+
     public bool WrongWay {get;set;}
-
-
-
+    
+    public bool IsReady { get; set; }
     public override string ToString()
     {
         return Name;

@@ -19,6 +19,8 @@ public class SetupPlayer : NetworkBehaviour
 
     [SyncVar(hook = nameof(HandleDisplayColorUpdated))]
     private Color _carColor;
+    
+    [SyncVar] private bool _ready;
 
     private UIManager _uiManager;
     private MyNetworkManager _networkManager;
@@ -29,6 +31,7 @@ public class SetupPlayer : NetworkBehaviour
     private PolePositionManager _polePositionManager;
 
     
+
 
     public struct ServerMessage : NetworkMessage
     {
@@ -60,6 +63,7 @@ public class SetupPlayer : NetworkBehaviour
         _playerInfo.Name = "Player " + aux;
         _playerInfo.CurrentColor = new Color(0.91f,0.33f,0.33f,1);
         _playerInfo.CurrentLap = 0;
+        _playerInfo.IsReady = false;
         _polePositionManager.AddPlayer(_playerInfo);
     }
 
@@ -193,6 +197,14 @@ public class SetupPlayer : NetworkBehaviour
     {
         SetDisplayColor(newColor);
     }
+
+    [Command]
+    public void CmdSetReday()
+    {
+        
+    }
+    
+    
 
     #endregion
 
