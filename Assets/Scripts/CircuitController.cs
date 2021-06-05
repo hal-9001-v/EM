@@ -23,7 +23,6 @@ public class CircuitController : MonoBehaviour
         _cumArcLength = new float[numPoints];
         _circuitPath.GetPositions(_pathPos);
 
-        int colliderNum = GetColliderNumber(numPoints);
         // Compute circuit arc-length
         _cumArcLength[0] = 0;
 
@@ -35,6 +34,7 @@ public class CircuitController : MonoBehaviour
 
         _totalLength = _cumArcLength[_cumArcLength.Length - 1];
 
+        int colliderNum = GetColliderNumber(numPoints);
         Vector3[] collliderPos = new Vector3[colliderNum];
         int j = 0;
         for (int i = 0; i < numPoints; i += colliderNum){

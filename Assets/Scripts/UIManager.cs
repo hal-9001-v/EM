@@ -11,12 +11,22 @@ public class UIManager : MonoBehaviour
     public bool showGUI = true;
 
     private MyNetworkManager m_NetworkManager;
-
+    private PolePositionManager  _manager;
+     
+    private PlayerController _player;
     [Header("Main Menu")] [SerializeField] private GameObject mainMenu;
     [SerializeField] private Button buttonHost;
     [SerializeField] private Button buttonClient;
     [SerializeField] private Button buttonServer;
     [SerializeField] private TMP_InputField inputFieldIP;
+
+
+    [Header("Play Menu")] [SerializeField] private GameObject playMenu;
+    [SerializeField] private Button playButton;
+    [SerializeField] private Button spectateButton;
+    [SerializeField] private Button trainButton;
+    [SerializeField] private TextMeshProUGUI currentPlayers;
+
 
 
     [Header("Character Personalization + Ready Menu")] [SerializeField] private GameObject personalizationMenu;
@@ -38,16 +48,43 @@ public class UIManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI textLaps;
     [SerializeField] private TextMeshProUGUI textPosition;
 
+
+    [Header("Pause Menu")] [SerializeField] private GameObject pauseHUD;
+    
+    [SerializeField] private Button resume;
+    [SerializeField] private Button disconnect;
+    [SerializeField] private Button quit;
+
+
     public SetupPlayer myChangingPlayer;
 
     private void Awake()
     {
         m_NetworkManager = FindObjectOfType<MyNetworkManager>();
 
+        _manager = FindObjectOfType<PolePositionManager>();
+        
         _name.placeholder.color =  red.GetComponent<Image>().color;
         _name.textComponent.color= red.GetComponent<Image>().color;
-
+        pauseHUD.SetActive(false);
     }
+
+
+    private void Update()
+    {
+        textPosition.text = _manager.GetRaceProgress();
+        if(_player!=null) {
+            pauseHUD.SetActive(_player.GetPause());
+            Debug.Log("willing to pause");
+        }
+        
+        
+        //if( myChangingPlayer!= null) textLaps.text = myChangingPlayer.
+        
+    }
+
+
+
 
     private void Start()
     {
@@ -61,9 +98,34 @@ public class UIManager : MonoBehaviour
         black.onClick.AddListener(() => setColor(black.GetComponent<Image>().color));
         white.onClick.AddListener(() => setColor(white.GetComponent<Image>().color));
         yellow.onClick.AddListener(() => setColor(yellow.GetComponent<Image>().color));
+        playButton.onClick.AddListener(() => Play());
+        spectateButton.onClick.AddListener(() => Spectate());
+        trainButton.onClick.AddListener(() => Train());
+        resume.onClick.AddListener(() => Resume());
+        disconnect.onClick.AddListener(() => Disconnect());
+        quit.onClick.AddListener(() => Quit());
         ActivateMainMenu();
     }
 
+    private void Resume(){
+
+        if(_player != null) _player.SetPause();
+
+    }
+
+    private void Disconnect(){
+
+        NetworkManager.singleton.StopClient();
+        NetworkManager.singleton.StopHost();
+        
+
+    }
+
+    private void Quit(){
+
+        Application.Quit();
+
+    }
     private void setColor(Color color){
 
         _name.placeholder.color = color;
@@ -77,7 +139,7 @@ public class UIManager : MonoBehaviour
         ready.gameObject.GetComponent<Image>().color = Color.green;
         if(myChangingPlayer!=null) myChangingPlayer.CmdSetDisplayName(_name.textComponent.text);
         ActivateInGameHUD();
-
+        
     }
 
     public void UpdateSpeed(int speed)
@@ -88,11 +150,18 @@ public class UIManager : MonoBehaviour
     public void UpdateRaceRank(string rank) {
         textPosition.text = rank;
     }
+    public void UpdatePlayerText(int i){
+
+        currentPlayers.text = i + "/4";
+
+    }
+    
 
     private void ActivateMainMenu()
     {
         mainMenu.SetActive(true);
         inGameHUD.SetActive(false);
+        playMenu.SetActive(false);
         personalizationMenu.SetActive(false);
     }
 
@@ -100,34 +169,63 @@ public class UIManager : MonoBehaviour
     {
         mainMenu.SetActive(false);
         personalizationMenu.SetActive(false);
+        playMenu.SetActive(false);
         inGameHUD.SetActive(true);
+        if(myChangingPlayer !=null)  _player = myChangingPlayer.gameObject.GetComponent<PlayerController>();
     }
 
     private void ActivatePersonalizationMenu(){
-
+        
         mainMenu.SetActive(false);
+        playMenu.SetActive(false);
         personalizationMenu.SetActive(true);
         inGameHUD.SetActive(false);
+
+    }
+    private void ActivatePlayMenu(){
+
+        mainMenu.SetActive(false);
+        playMenu.SetActive(true);
+        personalizationMenu.SetActive(false);
+        inGameHUD.SetActive(false);
+
+    }
+
+    private void Play(){
+
+        NetworkClient.AddPlayer();
+        ActivatePersonalizationMenu();
+
+    }
+
+    private void Spectate(){
+
+        Debug.Log("Not Implemented!");
+    }
+
+    private void Train(){
+
+        Debug.Log("Not Implemented!");
 
     }
 
     private void StartHost()
     {
         m_NetworkManager.StartHost();
-        ActivatePersonalizationMenu();
+        ActivatePlayMenu();
     }
 
     private void StartClient()
     {
         m_NetworkManager.StartClient();
         m_NetworkManager.networkAddress = inputFieldIP.text;
-        ActivatePersonalizationMenu();
+        ActivatePlayMenu();
     }
 
     private void StartServer()
     {
         m_NetworkManager.StartServer();
-        personalizationMenu.SetActive(false);
+        mainMenu.SetActive(false);
         MeshRenderer[] all = FindObjectsOfType<MeshRenderer>();
         foreach(MeshRenderer m in all) m.enabled = false;
     }

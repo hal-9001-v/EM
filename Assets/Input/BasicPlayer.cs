@@ -33,6 +33,14 @@ public class @BasicPlayer : IInputActionCollection, IDisposable
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """"
+                },
+                {
+                    ""name"": ""Pause"",
+                    ""type"": ""Button"",
+                    ""id"": ""e2b55f53-d436-4acd-b0e5-0b65b41f05f8"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """"
                 }
             ],
             ""bindings"": [
@@ -156,6 +164,17 @@ public class @BasicPlayer : IInputActionCollection, IDisposable
                     ""action"": ""Brake"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""bea45604-2f4c-46f1-b4d5-807d9ae9ad89"",
+                    ""path"": ""<Keyboard>/escape"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Car"",
+                    ""action"": ""Pause"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -178,6 +197,7 @@ public class @BasicPlayer : IInputActionCollection, IDisposable
         m_PC = asset.FindActionMap("PC", throwIfNotFound: true);
         m_PC_Move = m_PC.FindAction("Move", throwIfNotFound: true);
         m_PC_Brake = m_PC.FindAction("Brake", throwIfNotFound: true);
+        m_PC_Pause = m_PC.FindAction("Pause", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -229,12 +249,14 @@ public class @BasicPlayer : IInputActionCollection, IDisposable
     private IPCActions m_PCActionsCallbackInterface;
     private readonly InputAction m_PC_Move;
     private readonly InputAction m_PC_Brake;
+    private readonly InputAction m_PC_Pause;
     public struct PCActions
     {
         private @BasicPlayer m_Wrapper;
         public PCActions(@BasicPlayer wrapper) { m_Wrapper = wrapper; }
         public InputAction @Move => m_Wrapper.m_PC_Move;
         public InputAction @Brake => m_Wrapper.m_PC_Brake;
+        public InputAction @Pause => m_Wrapper.m_PC_Pause;
         public InputActionMap Get() { return m_Wrapper.m_PC; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -250,6 +272,9 @@ public class @BasicPlayer : IInputActionCollection, IDisposable
                 @Brake.started -= m_Wrapper.m_PCActionsCallbackInterface.OnBrake;
                 @Brake.performed -= m_Wrapper.m_PCActionsCallbackInterface.OnBrake;
                 @Brake.canceled -= m_Wrapper.m_PCActionsCallbackInterface.OnBrake;
+                @Pause.started -= m_Wrapper.m_PCActionsCallbackInterface.OnPause;
+                @Pause.performed -= m_Wrapper.m_PCActionsCallbackInterface.OnPause;
+                @Pause.canceled -= m_Wrapper.m_PCActionsCallbackInterface.OnPause;
             }
             m_Wrapper.m_PCActionsCallbackInterface = instance;
             if (instance != null)
@@ -260,6 +285,9 @@ public class @BasicPlayer : IInputActionCollection, IDisposable
                 @Brake.started += instance.OnBrake;
                 @Brake.performed += instance.OnBrake;
                 @Brake.canceled += instance.OnBrake;
+                @Pause.started += instance.OnPause;
+                @Pause.performed += instance.OnPause;
+                @Pause.canceled += instance.OnPause;
             }
         }
     }
@@ -277,5 +305,6 @@ public class @BasicPlayer : IInputActionCollection, IDisposable
     {
         void OnMove(InputAction.CallbackContext context);
         void OnBrake(InputAction.CallbackContext context);
+        void OnPause(InputAction.CallbackContext context);
     }
 }

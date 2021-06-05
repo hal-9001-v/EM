@@ -94,7 +94,7 @@ public class PolePositionManager : MonoBehaviour
 
         return raceOrder;
     }
-
+    
     float ComputeCarArcLength(int id)
     {
         // Compute the projection of the car position to the closest circuit 
