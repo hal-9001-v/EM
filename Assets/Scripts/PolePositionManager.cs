@@ -10,7 +10,9 @@ public class PolePositionManager : NetworkBehaviour
     const int MaxPlayers = 4;
     private MyNetworkManager _networkManager;
 
-    private List<PlayerInfo> _players = new List<PlayerInfo>();
+    public List<PlayerInfo> players = new List<PlayerInfo>();
+
+    public List<GameObject> PlayerTransforms = new List<GameObject>();
 
     private CircuitController _circuitController;
     private GameObject[] _debuggingSpheres;
@@ -32,21 +34,25 @@ public class PolePositionManager : NetworkBehaviour
         }
     }
 
+
     private void Update()
     {
+
         _uiManager.UpdateRaceRank(GetRaceProgress());
     }
 
     public void AddPlayer(PlayerInfo player)
     {
-        _players.Add(player);
+        players.Add(player);
+
     }
 
 
 
     public void RemovePlayer(PlayerInfo player)
     {
-        _players.Remove(player);
+        players.Remove(player);
+        //PlayerTransforms.Remove(player.transform);
 
     }
 
@@ -73,18 +79,18 @@ public class PolePositionManager : NetworkBehaviour
         float[] arcLengths = new float[MaxPlayers];
 
 
-        for (int i = 0; i < _players.Count; ++i)
+        for (int i = 0; i < players.Count; ++i)
         {
-            if (_players[i] != null)
+            if (players[i] != null)
             {
                 arcLengths[i] = ComputeCarArcLength(i);
             }
         }
 
-        _players.Sort(new PlayerInfoComparer(arcLengths));
+        players.Sort(new PlayerInfoComparer(arcLengths));
 
         string raceOrder = "";
-        foreach (var player in _players)
+        foreach (var player in players)
         {
 
             if (player != null)
@@ -101,7 +107,7 @@ public class PolePositionManager : NetworkBehaviour
         // Compute the projection of the car position to the closest circuit 
         // path segment and accumulate the arc-length along of the car along
         // the circuit.
-        Vector3 carPos = this._players[id].transform.position;
+        Vector3 carPos = this.players[id].transform.position;
 
         int segIdx;
         float carDist;
@@ -111,14 +117,14 @@ public class PolePositionManager : NetworkBehaviour
 
         this._debuggingSpheres[id].transform.position = carProj;
 
-        if (this._players[id].CurrentLap == 0)
+        if (this.players[id].CurrentLap == 0)
         {
             minArcL -= _circuitController.CircuitLength;
         }
         else
         {
             minArcL += _circuitController.CircuitLength *
-                       (_players[id].CurrentLap - 1);
+                       (players[id].CurrentLap - 1);
         }
 
         return minArcL;

@@ -11,7 +11,7 @@ using Mirror;
 public class PlayerController : NetworkBehaviour
 {
     [SyncVar] private int _startCollider = 0;
-
+    [SyncVar] public bool is_viewer = false;
 
     #region Variables
     [Header("Movement")] public List<AxleInfo> axleInfos;
@@ -29,13 +29,11 @@ public class PlayerController : NetworkBehaviour
     private bool _inputBrake { get; set; }
     public bool _inputPauseMenu { get; set; }
 
-    public static List<Transform> Players = new List<Transform>();
-
-    PlayerMode _currentMode;
-
     private PlayerInfo m_PlayerInfo;
 
     private Rigidbody m_Rigidbody;
+
+    private PolePositionManager _polePositionManager;
     private float m_SteerHelper = 0.8f;
 
     int _currentCamera;
@@ -59,35 +57,80 @@ public class PlayerController : NetworkBehaviour
 
     public event OnSpeedChangeDelegate OnSpeedChangeEvent;
 
-    public enum PlayerMode
-    {
-        car,
-        viewer
-    }
-
+    public int mode;
 
     #endregion Variables
 
     #region Unity Callbacks
 
-    public void Awake()
+    void Awake()
     {
         m_Rigidbody = GetComponent<Rigidbody>();
         m_PlayerInfo = GetComponent<PlayerInfo>();
 
-        Players.Add(transform);
+        mode = FindObjectOfType<Mode>().mode;
 
+
+    }
+
+
+    [Command]
+    public void CmdPrepareForMode(int newMode)
+    {
+        RpcPrepareForMode(newMode);
+
+    }
+
+    [ClientRpc]
+    void RpcPrepareForMode(int newMode)
+    {
+        switch (newMode)
+        {
+            case 0:
+
+                break;
+
+            case 1:
+                foreach (Collider c in GetComponentsInChildren<Collider>())
+                {
+                    c.enabled = false;
+                }
+
+                foreach (Renderer r in GetComponentsInChildren<Renderer>())
+                {
+                    r.enabled = false;
+                }
+
+                foreach (Canvas c in GetComponentsInChildren<Canvas>())
+                {
+                    c.enabled = false;
+                }
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    private void HandleModeUpdated(int oldMode, int newMode)
+    {
+
+        Debug.Log("Changed to " + newMode);
 
     }
 
     public void Start()
     {
+        CmdPrepareForMode(mode);
+
+        _polePositionManager = FindObjectOfType<PolePositionManager>();
         _camera = FindObjectOfType<CameraController>();
+
+        if (_camera == null) Debug.Log("Fux");
     }
 
     public void InitializeInput(BasicPlayer _input)
     {
-
         _input.PC.Move.performed += ctx =>
         {
 
@@ -124,6 +167,8 @@ public class PlayerController : NetworkBehaviour
     public void Update()
     {
         Speed = m_Rigidbody.velocity.magnitude;
+
+        Debug.Log(_polePositionManager.PlayerTransforms.Count);
     }
 
     void ApplyMovement(float inputSteering, float inputAcceleration, bool inputBrake)
@@ -197,7 +242,11 @@ public class PlayerController : NetworkBehaviour
 
     public void FixedUpdate()
     {
-        CmdApplyMovement(_inputSteering, _inputAcceleration, _inputBrake);
+        if (mode == 0)
+        {
+            CmdApplyMovement(_inputSteering, _inputAcceleration, _inputBrake);
+        }
+
         //ClientApplyMovement();
     }
 
@@ -314,17 +363,17 @@ public class PlayerController : NetworkBehaviour
 
     void DisplayNextCamera()
     {
-        if (_currentMode == PlayerMode.viewer)
+        if (mode == 1 && _polePositionManager.players.Count != 0)
         {
             _currentCamera++;
 
-            if (_currentCamera >= Players.Count)
+            if (_currentCamera >= _polePositionManager.players.Count)
             {
                 _currentCamera = 0;
-
-
-                _camera.m_Focus = Players[_currentCamera].gameObject;
             }
+
+            //_camera.m_Focus = _polePositionManager.PlayerTransforms[_currentCamera].gameObject;
+            FindObjectOfType<CameraController>().m_Focus = _polePositionManager.players[_currentCamera].transform;
 
         }
 
@@ -332,38 +381,22 @@ public class PlayerController : NetworkBehaviour
 
     void DisplayPreviousCamera()
     {
-        if (_currentMode == PlayerMode.viewer)
+        if (mode == 1 && _polePositionManager.players.Count != 0)
         {
             _currentCamera--;
 
             if (_currentCamera < 0)
             {
-                _currentCamera = Players.Count - 1;
-
-                _camera.m_Focus = Players[_currentCamera].gameObject;
+                _currentCamera = _polePositionManager.players.Count - 1;
             }
+
+            //_camera.m_Focus = _polePositionManager.PlayerTransforms[_currentCamera].gameObject;
+            FindObjectOfType<CameraController>().m_Focus = _polePositionManager.players[_currentCamera].transform;
+
+
         }
 
 
-    }
-
-    public void SetMode(PlayerMode mode)
-    {
-        _currentMode = mode;
-
-        switch (mode)
-        {
-            case PlayerMode.car:
-                break;
-
-            case PlayerMode.viewer:
-                //Turn Invisible?
-
-                break;
-
-            default:
-                break;
-        }
     }
 
     private void OnTriggerEnter(Collider other)

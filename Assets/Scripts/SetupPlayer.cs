@@ -17,6 +17,8 @@ public class SetupPlayer : NetworkBehaviour
     [SyncVar(hook = nameof(HandleDisplayNameUpdated))]
     private string _name;
 
+    public bool IsViewer;
+
     [SyncVar(hook = nameof(HandleDisplayColorUpdated))]
     private Color _carColor;
 
@@ -43,6 +45,7 @@ public class SetupPlayer : NetworkBehaviour
     public override void OnStartServer()
     {
         base.OnStartServer();
+        _polePositionManager.PlayerTransforms.Add(gameObject);
         _id = NetworkServer.connections.Count - 1;
     }
 
@@ -59,7 +62,6 @@ public class SetupPlayer : NetworkBehaviour
         _playerInfo.CurrentColor = new Color(0.91f,0.33f,0.33f,1);
         _playerInfo.CurrentLap = 0;
         _polePositionManager.AddPlayer(_playerInfo);
-
     }
 
     /// <summary>
@@ -68,11 +70,11 @@ public class SetupPlayer : NetworkBehaviour
     /// </summary>
     public override void OnStartLocalPlayer()
     {
-        
         CmdSetDisplayName(_playerInfo.Name);
         CmdSetColor(_playerInfo.CurrentColor);
         InitializeInput();
         _playerController.InitializeInput(_input);
+        
         
     }
 
@@ -145,6 +147,8 @@ public class SetupPlayer : NetworkBehaviour
         _playerInfo.name = newName;
     }
 
+
+
     void OnServerNotification(ServerMessage message)
     {
         Debug.Log("[CLIENT] Número de jugadores en el Lobby -> " + message.client_numberPlayers);
@@ -195,7 +199,7 @@ public class SetupPlayer : NetworkBehaviour
 
     void ConfigureCamera()
     {
-        if (Camera.main != null) Camera.main.gameObject.GetComponent<CameraController>().m_Focus = this.gameObject;
+        if (Camera.main != null) Camera.main.gameObject.GetComponent<CameraController>().m_Focus = transform;
     }
 
     #region Test

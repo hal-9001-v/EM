@@ -76,10 +76,13 @@ public class ScreenConsole : MonoBehaviour
 
     void HandleLog(string message, string stackTrace, LogType type)
     {
-        if (_textMesh != null)
+        if (_textMesh != null && _showConsole)
         {
 
-            _textMesh.text = _textMesh.text + message + "\n";
+            if (type == LogType.Error)
+                _textMesh.text += stackTrace;
+
+            _textMesh.text = _textMesh.text + message + "\n \n";
 
         }
     }

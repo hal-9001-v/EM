@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class CameraController : MonoBehaviour
 {
-    [SerializeField] public GameObject m_Focus;
+    [SerializeField] public Transform m_Focus;
 
     [SerializeField] public Vector3 m_offset = new Vector3(10, 10, 10);
 
@@ -42,7 +42,7 @@ public class CameraController : MonoBehaviour
                 float carDist;
                 Vector3 carProj;
 
-                m_Circuit.ComputeClosestPointArcLength(m_Focus.transform.position, out segIdx, out carProj,
+                m_Circuit.ComputeClosestPointArcLength(m_Focus.position, out segIdx, out carProj,
                     out carDist );
 
                 Vector3 pathDir = -m_Circuit.GetSegment(segIdx);
@@ -53,13 +53,13 @@ public class CameraController : MonoBehaviour
                 Vector3 offset = this.m_Direction * this.m_Distance;
                 offset = new Vector3(offset.x, m_Elevation, offset.z);
 
-                mainCamera.transform.position = m_Focus.transform.position + offset;
-                mainCamera.transform.LookAt(m_Focus.transform.position);
+                mainCamera.transform.position = m_Focus.position + offset;
+                mainCamera.transform.LookAt(m_Focus.position);
             }
             else
             {
-                mainCamera.transform.position = m_Focus.transform.position + m_offset;
-                mainCamera.transform.LookAt(m_Focus.transform.position);
+                mainCamera.transform.position = m_Focus.position + m_offset;
+                mainCamera.transform.LookAt(m_Focus.position);
 
             }
         }
