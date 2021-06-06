@@ -24,7 +24,6 @@ public class PlayerController : NetworkBehaviour
 
     [SyncVar(hook = nameof(HandleLastChekcpointTransform))]
     private Vector3 _myFixPos;
-    
 
 
     Timer t;
@@ -53,12 +52,10 @@ public class PlayerController : NetworkBehaviour
     private PlayerInfo m_PlayerInfo;
     public UIManager m_UImanager;
     public SetupPlayer m_SetupPlayer;
-    
+
     private Rigidbody m_Rigidbody;
 
     private float m_SteerHelper = 0.8f;
-
-
     private float m_CurrentSpeed = 0;
 
     public int mode;
@@ -66,7 +63,6 @@ public class PlayerController : NetworkBehaviour
     int _currentCamera;
     CameraController _camera;
     private PolePositionManager _polePositionManager;
-
 
     private float Speed
     {
@@ -84,6 +80,11 @@ public class PlayerController : NetworkBehaviour
 
     public event OnSpeedChangeDelegate OnSpeedChangeEvent;
 
+    [SyncVar(hook = nameof(HandlerLapTimerUpdate))]
+    public double _currentLapTime;
+
+    private Timer _timer;
+
     #endregion Variables
 
     #region Unity Callbacks
@@ -95,19 +96,17 @@ public class PlayerController : NetworkBehaviour
         m_SetupPlayer = GetComponent<SetupPlayer>();
         t = FindObjectOfType<Timer>();
         _startCollider = GameObject.Find("0");
-
     }
 
 
     private void Start()
     {
-
         if (isLocalPlayer)
         {
             m_UImanager = FindObjectOfType<UIManager>();
             _polePositionManager = FindObjectOfType<PolePositionManager>();
             _camera = FindObjectOfType<CameraController>();
-            CmdCheckPointCheck(_startCollider.name);
+            CmdCheckPointCheck(_startCollider.name, _polePositionManager);
 
             if (m_UImanager.playerIsViewer) mode = 1;
             else mode = 0;
@@ -116,9 +115,7 @@ public class PlayerController : NetworkBehaviour
         }
 
 
-
         if (_camera == null) Debug.Log("Fux");
-
     }
 
     public void InitializeInput(BasicPlayer _input)
@@ -144,7 +141,6 @@ public class PlayerController : NetworkBehaviour
         };
 
 
-
         _input.Enable();
     }
 
@@ -156,7 +152,7 @@ public class PlayerController : NetworkBehaviour
         m_UImanager.UpdateCurrentLap(_currentLap, 4);
         m_UImanager.UpdateWarning(_wrongWay);
 
-
+        ServerUpdateLapTimer();
     }
 
     [Server]
@@ -243,7 +239,6 @@ public class PlayerController : NetworkBehaviour
     public void CmdPrepareForMode(int newMode)
     {
         RpcPrepareForMode(newMode);
-
     }
 
     [ClientRpc]
@@ -270,6 +265,7 @@ public class PlayerController : NetworkBehaviour
                 {
                     c.enabled = false;
                 }
+
                 break;
 
             default:
@@ -281,8 +277,6 @@ public class PlayerController : NetworkBehaviour
     {
         CmdApplyMovement(_inputSteering, _inputAcceleration, _inputBrake);
         //ClientApplyMovement();
-
-
     }
 
     [Server]
@@ -293,13 +287,11 @@ public class PlayerController : NetworkBehaviour
             isCounting = true;
             startingThreshholdTime = t.GetCurrentServerTime();
             currentThreshhold = startingThreshholdTime + teleportThreshhold;
-
         }
 
 
         if (t.GetCurrentServerTime() >= currentThreshhold)
         {
-
             int lookAux = GetNextCheckPoint();
             int posAux = lookAux - 1;
             GameObject temp = GameObject.Find(posAux.ToString());
@@ -307,28 +299,21 @@ public class PlayerController : NetworkBehaviour
             Teleport(temp, look);
             currentThreshhold = t.GetCurrentServerTime() + 30;
             isCounting = false;
-
         }
-
     }
 
 
     private void Teleport(GameObject temp, GameObject look)
     {
-
-
         gameObject.transform.position = temp.transform.position;
-        gameObject.transform.rotation = Quaternion.Euler(new Vector3(gameObject.transform.rotation.x, 0, gameObject.transform.rotation.z));
+        gameObject.transform.rotation =
+            Quaternion.Euler(new Vector3(gameObject.transform.rotation.x, 0, gameObject.transform.rotation.z));
         gameObject.transform.LookAt(look.transform);
-
-
     }
 
     private int GetNextCheckPoint()
     {
-
         return _currentCheckPoint;
-
     }
 
 
@@ -448,28 +433,38 @@ public class PlayerController : NetworkBehaviour
         m_PlayerInfo.CurrentLap = newLap;
     }
 
+    private void HandlerLapTimerUpdate(double oldDouble, double newDouble)
+    {
+        m_UImanager.UpdateLapTime(newDouble);
+        if (oldDouble < newDouble)
+        {
+            m_PlayerInfo.LapTime = newDouble;
+        }
+
+        m_PlayerInfo.TotalTime += newDouble;
+    }
+
     private void HandleWrongWayCheck(bool oldBool, bool newBool)
     {
         Debug.Log("Wrong Way!");
         m_PlayerInfo.WrongWay = newBool;
     }
+
     private void HandleLastChekcpointTransform(Vector3 oldPos, Vector3 newPos)
     {
         Debug.Log("Position Reset!");
-
     }
 
 
     [Command]
-    public void CmdCheckPointCheck(string name)
+    public void CmdCheckPointCheck(string name, PolePositionManager _polePositionManager)
     {
-        ServerCheckPointCheck(name);
+        ServerCheckPointCheck(name, _polePositionManager);
     }
 
 
-
     [Server]
-    public void ServerCheckPointCheck(string name)
+    public void ServerCheckPointCheck(string name, PolePositionManager _polePositionManager)
     {
         if (int.Parse(name) == _currentCheckPoint)
         {
@@ -482,6 +477,7 @@ public class PlayerController : NetworkBehaviour
             {
                 //Update laps
                 _currentLap++;
+                ResetLapTime();
                 Debug.Log("Current Lap = " + _currentLap);
             }
 
@@ -519,9 +515,7 @@ public class PlayerController : NetworkBehaviour
 
             //_camera.m_Focus = _polePositionManager.PlayerTransforms[_currentCamera].gameObject;
             FindObjectOfType<CameraController>().m_Focus = _polePositionManager._players[_currentCamera].transform;
-
         }
-
     }
 
     void DisplayPreviousCamera()
@@ -537,11 +531,7 @@ public class PlayerController : NetworkBehaviour
 
             //_camera.m_Focus = _polePositionManager.PlayerTransforms[_currentCamera].gameObject;
             FindObjectOfType<CameraController>().m_Focus = _polePositionManager._players[_currentCamera].transform;
-
-
         }
-
-
     }
 
     private void OnTriggerEnter(Collider other)
@@ -552,8 +542,21 @@ public class PlayerController : NetworkBehaviour
             string s = other.name;
             if (isLocalPlayer)
             {
-                CmdCheckPointCheck(s);
+                CmdCheckPointCheck(s, _polePositionManager);
             }
         }
+    }
+
+    [Server]
+    public void ResetLapTime()
+    {
+        _currentLapTime = 0;
+        _polePositionManager.lapStartingTime = _timer.GetCurrentServerTime();
+    }
+
+    [Server]
+    public void ServerUpdateLapTimer()
+    {
+        _currentLapTime = _timer.GetCurrentServerTime() - _polePositionManager.lapStartingTime;
     }
 }

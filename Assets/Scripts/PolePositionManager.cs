@@ -6,8 +6,6 @@ using UnityEngine;
 //public class PolePositionManager : NetworkBehaviour
 public class PolePositionManager : NetworkBehaviour
 {
-    public int numPlayers;
-
     const int MaxPlayers = 4;
     private MyNetworkManager _networkManager;
 
@@ -23,12 +21,20 @@ public class PolePositionManager : NetworkBehaviour
     [SyncVar] private bool _isRaceInProgress;
 
     [SyncVar] public bool isActiveMovement = false;
-    [SyncVar (hook = nameof(HandleTimerUpdate))] public double _currentTime ;
+
+    [SyncVar(hook = nameof(HandleTimerUpdate))]
+    public double _currentTime;
+
+
     public double myCurrentTime;
+
     [SyncVar] public bool arePlayersReady;
 
     private bool countDownStarted;
-    private double startingTime;
+
+    [SyncVar] public double startingTime;
+    [SyncVar] public double lapStartingTime;
+
     double threshHold;
 
     private void Awake()
@@ -55,48 +61,32 @@ public class PolePositionManager : NetworkBehaviour
         {
             ArePlayersReady();
         }
-        
-        UIHandle();
-    }
-    
-    public void UIHandle(){
-
-        CmdUpdateTimer();
-
-    }
-
-    private void HandleTimerUpdate(double oldDouble, double newDouble){
-
-        myCurrentTime = newDouble;
-        _uiManager.UpdateLapTime(newDouble);
-        _uiManager.UpdateTotalTime(newDouble);
-
-    }
-
-    [Command]
-    public void CmdUpdateTimer(){
 
         ServerUpdateTimer();
+    }
 
+    private void HandleTimerUpdate(double oldDouble, double newDouble)
+    {
+        myCurrentTime = newDouble;
+        _uiManager.UpdateTotalTime(newDouble);
     }
 
     [Server]
-    public void ServerUpdateTimer(){
-
+    public void ServerUpdateTimer()
+    {
         _currentTime = _timer.GetCurrentServerTime() - startingTime;
         Debug.Log(_currentTime);
-
     }
 
-    public double GetCurrentRaceTime(){
 
+    public double GetCurrentRaceTime()
+    {
         return _currentTime;
-
     }
 
     public void AddPlayer(PlayerInfo player)
     {
-        if (_players.Count < 4)
+        if (_players.Count < MaxPlayers)
         {
             _players.Add(player);
         }
@@ -250,7 +240,8 @@ public class PolePositionManager : NetworkBehaviour
         {
             _players[i].CanMove = isActiveMovement;
         }
+
         startingTime = _timer.GetCurrentServerTime();
+        lapStartingTime = startingTime;
     }
-    
 }
