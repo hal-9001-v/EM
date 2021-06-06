@@ -68,11 +68,13 @@ public class PolePositionManager : NetworkBehaviour
                 RpcUpdateRaceProgress(raceProgress);
             }
             else ArePlayersReady();
+
+            UpdateClientLists();
+
         }
 
-        UpdateClientLists();
     }
-    
+
     [ClientRpc]
     void RpcUpdateRaceProgress(string raceProgress)
     {
@@ -99,9 +101,17 @@ public class PolePositionManager : NetworkBehaviour
     }
 
 
-    public int GetPlayerCount()
+    public int GetAllPlayerCount()
     {
         return _players.Count;
+    }
+ public int GetAllRacePlayerCount()
+    {
+        return _playersInRace.Count;
+    }
+ public int GetAllSpectatorPlayerCount()
+    {
+        return _spectators.Count;
     }
 
     public void RemovePlayer(PlayerInfo player)
@@ -134,15 +144,15 @@ public class PolePositionManager : NetworkBehaviour
 
 
 
-        for (int i = 0; i < _players.Count; ++i)
+        for (int i = 0; i < _playersInRace.Count; ++i)
         {
-            if (_players[i] != null)
+            if (_playersInRace[i] != null)
             {
-                _players[i].CurrentArc = ComputeCarArcLength(i);
+                _playersInRace[i].CurrentArc = ComputeCarArcLength(i);
             }
         }
 
-        _players.Sort((a, b) =>
+        _playersInRace.Sort((a, b) =>
         {
             if (a.CurrentLap != b.CurrentLap)
 
@@ -156,7 +166,7 @@ public class PolePositionManager : NetworkBehaviour
         });
 
         string raceOrder = "";
-        foreach (var player in _players)
+        foreach (var player in _playersInRace)
         {
             if (player != null)
             {
