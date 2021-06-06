@@ -14,6 +14,11 @@ public class UIManager : MonoBehaviour
     private MyNetworkManager m_NetworkManager;
     private PolePositionManager _manager;
 
+    [HideInInspector] public SetupPlayer myChangingPlayer;
+
+    [Header("CountDown")] [SerializeField] private GameObject countDown;
+
+    [SerializeField] private TextMeshProUGUI numbersInCountDown;
 
     #region GUIBUTTONS
 
@@ -66,11 +71,7 @@ public class UIManager : MonoBehaviour
 
     #endregion
 
-    [HideInInspector] public SetupPlayer myChangingPlayer;
-
-    [Header("CountDown")] [SerializeField] private GameObject countDown;
-
-    [SerializeField] private TextMeshProUGUI numbersInCountDown;
+    
 
     private void Awake()
     {
@@ -126,6 +127,7 @@ public class UIManager : MonoBehaviour
     {
         NetworkManager.singleton.StopClient();
         NetworkManager.singleton.StopHost();
+        ActivateMainMenu();
     }
 
     private void Quit()
@@ -143,7 +145,7 @@ public class UIManager : MonoBehaviour
 
     private void Ready()
     {
-        myChangingPlayer.CmdSetReday();
+        myChangingPlayer.CmdSetReady();
         readyText.text = "Yes";
         ready.gameObject.GetComponent<Image>().color = Color.green;
         if (myChangingPlayer != null)
@@ -190,6 +192,7 @@ public class UIManager : MonoBehaviour
         playMenu.SetActive(false);
         personalizationMenu.SetActive(false);
         countDown.SetActive(false);
+        pauseHUD.SetActive(false);
     }
 
     public void ActivateInGameHUD()
@@ -199,8 +202,6 @@ public class UIManager : MonoBehaviour
         playMenu.SetActive(false);
         inGameHUD.SetActive(true);
         countDown.SetActive(false);
-        
-        myChangingPlayer.RpcActivateMovement();
     }
 
     private void ActivatePersonalizationMenu()
@@ -232,8 +233,10 @@ public class UIManager : MonoBehaviour
 
     private void Play()
     {
-        NetworkClient.AddPlayer();
-        ActivatePersonalizationMenu();
+        
+            NetworkClient.AddPlayer();
+            ActivatePersonalizationMenu();
+
     }
 
     private void Spectate()

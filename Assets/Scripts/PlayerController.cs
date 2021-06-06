@@ -24,8 +24,7 @@ public class PlayerController : NetworkBehaviour
 
     [SyncVar(hook = nameof(HandleLastChekcpointTransform))]
     private Vector3 _myFixPos;
-
-    [SyncVar] private bool _canMove = false;
+    
 
 
     Timer t ;
@@ -54,6 +53,7 @@ public class PlayerController : NetworkBehaviour
     private PlayerInfo m_PlayerInfo;
     public UIManager m_UImanager;
     public SetupPlayer m_SetupPlayer;
+    
     private Rigidbody m_Rigidbody;
     private float m_SteerHelper = 0.8f;
 

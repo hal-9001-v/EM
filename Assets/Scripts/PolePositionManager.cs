@@ -20,15 +20,15 @@ public class PolePositionManager : NetworkBehaviour
 
     private Timer _timer;
 
-    [SyncVar(hook = nameof(HandleIsRaceInProgress))]
-    private bool isRaceInProgress = false;
+    [SyncVar] private bool _isRaceInProgress;
 
-    [SerializeField] private bool isClientRaceInProgress;
+    [SyncVar] public bool isActiveMovement = false;
 
-    [SyncVar(hook = nameof(HandleActiveMovement))]
-    public bool isActiveMovement = false;
+    [SyncVar] public bool arePlayersReady;
 
-    [SerializeField] public bool isActiveClientMovement;
+    private bool countDownStarted;
+    private double startingTime;
+    double threshHold;
 
     private void Awake()
     {
@@ -50,13 +50,11 @@ public class PolePositionManager : NetworkBehaviour
     {
         _uiManager.UpdateRaceRank(GetRaceProgress());
 
-        if (!isClientRaceInProgress && ArePlayersReady() && _players.Count >= 2)
+        if (!_isRaceInProgress && isServer)
         {
-            ActiveRace();
-            StarCountDownUI();
+            ArePlayersReady();
         }
     }
-    
 
     public void AddPlayer(PlayerInfo player)
     {
@@ -68,7 +66,11 @@ public class PolePositionManager : NetworkBehaviour
         {
             Debug.Log("CARRERA LLENA");
         }
+    }
 
+    public int GetPlayerCount()
+    {
+        return _players.Count;
     }
 
     public void RemovePlayer(PlayerInfo player)
@@ -148,68 +150,68 @@ public class PolePositionManager : NetworkBehaviour
         return minArcL;
     }
 
-    public void StarCountDownUI()
+    [ClientRpc]
+    public void RpcStarCountDownUI()
     {
         _uiManager.ActivateCountDown();
-
-        StartCoroutine(ChangeNumbersCountDown());
+        StartCoroutine(CountDown());
     }
 
-    IEnumerator ChangeNumbersCountDown()
+    private IEnumerator CountDown()
     {
-        yield return new WaitForSeconds(1);
-
+        yield return new WaitForSeconds(1f);
         _uiManager.UpdateTextCountDown("3");
-        
-        yield return new WaitForSeconds(1);
-
+        yield return new WaitForSeconds(1f);
         _uiManager.UpdateTextCountDown("2");
-
-        yield return new WaitForSeconds(1);
-
+        yield return new WaitForSeconds(1f);
         _uiManager.UpdateTextCountDown("1");
-
-        yield return new WaitForSeconds(1);
-
+        yield return new WaitForSeconds(1f);
         _uiManager.UpdateTextCountDown("GO");
-        
-        ActiveMovement();
+        yield return new WaitForSeconds(1f);
         _uiManager.ActivateInGameHUD();
     }
 
     [Server]
-    private bool ArePlayersReady()
+    private void ArePlayersReady()
     {
         int count = 0;
         for (int i = 0; i < _players.Count; i++)
         {
-            Debug.Log(_players[i].IsReady);
-           if(_players[i].IsReady) count++;
+            if (_players[i].IsReady) count++;
         }
 
-        if (count > _players.Count / 2) return true;
-        else return false;
+        if (count > _players.Count / 2 && _players.Count >= 2)
+        {
+            _isRaceInProgress = true;
+            RpcStarCountDownUI();
+
+            StartCoroutine(CountDown2());
+        }
     }
 
-    [Server]
-    private void ActiveRace()
+    private IEnumerator CountDown2()
     {
-        isRaceInProgress = true;
-    }
-
-    private void HandleIsRaceInProgress(bool oldActiveRace, bool newActiveRace)
-    {
-        isClientRaceInProgress = newActiveRace;
-    }
-
-    [Server]
-    private void ActiveMovement()
-    {
+        yield return new WaitForSeconds(3f);
         isActiveMovement = true;
+        SetMovementToPlayers();
+    }
+
+    private void SetMovementToPlayers()
+    {
+        RpcSetMovementToPlayers();
+        for (int i = 0; i < _players.Count; i++)
+        {
+            _players[i].CanMove = isActiveMovement;
+        }
+    }
+
+    [ClientRpc]
+    private void RpcSetMovementToPlayers()
+    {
+        for (int i = 0; i < _players.Count; i++)
+        {
+            _players[i].CanMove = isActiveMovement;
+        }
     }
     
-    private void HandleActiveMovement(bool oldActiveMovement, bool newActiveMovement)
-    {
-        isActiveClientMovement = newActiveMovement;
-    }
 }

@@ -14,16 +14,17 @@ public class Timer : NetworkBehaviour
         _currentClientTime = newCurrentTime;
     }
 
+    [Command]
+    private void CmdUpdateCurrentTime()
+    {
+        UpdateCurrentTime();
+    }
+
     [Server]
     private void UpdateCurrentTime()
     {
         _currentTime = NetworkTime.time;
-    }
-
-    [Server]
-    public void ResetTimer()
-    {
-        _currentTime = 0;
+        
     }
 
     private void Update()
@@ -33,7 +34,7 @@ public class Timer : NetworkBehaviour
 
     public double GetCurrentClientTime(){
 
-        return _currentTime;
+        return _currentClientTime;
 
     }
     public double GetCurrentServerTime(){
