@@ -437,6 +437,7 @@
         </e>
         <e p="Scripts" t="Include">
           <e p="AxleInfo.cs" t="Include" />
+          <e p="ChatManager.cs" t="Include" />
           <e p="CircuitController.cs" t="Include" />
           <e p="Cosmetic" t="Include">
             <e p="AttentionMenuCosmeticScript.cs" t="Include" />
