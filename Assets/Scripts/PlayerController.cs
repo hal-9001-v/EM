@@ -82,8 +82,7 @@ public class PlayerController : NetworkBehaviour
 
     [SyncVar(hook = nameof(HandlerLapTimerUpdate))]
     public double _currentLapTime;
-
-    private Timer _timer;
+    
 
     #endregion Variables
 
@@ -551,12 +550,12 @@ public class PlayerController : NetworkBehaviour
     public void ResetLapTime()
     {
         _currentLapTime = 0;
-        _polePositionManager.lapStartingTime = _timer.GetCurrentServerTime();
+        //_polePositionManager.lapStartingTime = t.GetCurrentServerTime();
     }
 
     [Server]
     public void ServerUpdateLapTimer()
     {
-        _currentLapTime = _timer.GetCurrentServerTime() - _polePositionManager.lapStartingTime;
+        //_currentLapTime = t.GetCurrentServerTime() - _polePositionManager.lapStartingTime;
     }
 }
