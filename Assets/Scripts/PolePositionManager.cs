@@ -133,18 +133,30 @@ public class PolePositionManager : NetworkBehaviour
         float[] arcLengths = new float[MaxPlayers];
 
 
-        for (int i = 0; i < _playersInRace.Count; ++i)
+
+        for (int i = 0; i < _players.Count; ++i)
         {
-            if (_playersInRace[i] != null)
+            if (_players[i] != null)
             {
-                arcLengths[i] = ComputeCarArcLength(i);
+                _players[i].CurrentArc = ComputeCarArcLength(i);
             }
         }
 
-        _playersInRace.Sort(new PlayerInfoComparer(arcLengths));
+        _players.Sort((a, b) =>
+        {
+            if (a.CurrentLap != b.CurrentLap)
+
+            {
+                return b.CurrentLap.CompareTo(a.CurrentLap);
+            }
+            else
+            {
+                return b.CurrentArc.CompareTo(a.CurrentArc);
+            }
+        });
 
         string raceOrder = "";
-        foreach (var player in _playersInRace)
+        foreach (var player in _players)
         {
             if (player != null)
             {
