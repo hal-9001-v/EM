@@ -7,7 +7,7 @@ using UnityEngine;
 public class PolePositionManager : NetworkBehaviour
 {
     private const int MaxPlayers = 4;
-    
+
     public int MaxLaps = 2;
 
     private const int MinimumNamberOfPlayers = 1;
@@ -30,10 +30,18 @@ public class PolePositionManager : NetworkBehaviour
 
     [SyncVar] public bool isActiveMovement = false;
 
+    [SyncVar(hook = nameof(HandleTimerUpdate))]
+    public double _currentTime;
+
+
+    public double myCurrentTime;
 
     [SyncVar] public bool arePlayersReady;
 
     private bool countDownStarted;
+
+    [SyncVar] public double startingTime;
+    [SyncVar] public double lapStartingTime;
 
     double threshHold;
 
@@ -57,36 +65,40 @@ public class PolePositionManager : NetworkBehaviour
     {
         _uiManager.UpdateRaceRank(GetRaceProgress());
 
-        if (isServer)
+        if (!_isRaceInProgress && isServer)
         {
-            if (_isRaceInProgress)
-            {
-                string raceProgress = GetRaceProgress();
-
-                _uiManager.UpdateRaceRank(raceProgress);
-
-                RpcUpdateRaceProgress(raceProgress);
-            }
-            else ArePlayersReady();
-
-            UpdateClientLists();
-
+            ArePlayersReady();
         }
 
+        ServerUpdateTimer();
+        UpdateClientLists();
     }
 
-    [ClientRpc]
-    void RpcUpdateRaceProgress(string raceProgress)
-    {
-        _uiManager.UpdateRaceRank(raceProgress);
 
+    private void HandleTimerUpdate(double oldDouble, double newDouble)
+    {
+        myCurrentTime = newDouble;
+        _uiManager.UpdateTotalTime(newDouble);
+    }
+
+    [Server]
+    public void ServerUpdateTimer()
+    {
+        _currentTime = _timer.GetCurrentServerTime() - startingTime;
+        Debug.Log(_currentTime);
+    }
+
+
+    public double GetCurrentRaceTime()
+    {
+        return _currentTime;
     }
 
 
     public void AddPlayer(PlayerInfo player)
     {
         _players.Add(player);
-        
+
     }
 
 
@@ -101,17 +113,9 @@ public class PolePositionManager : NetworkBehaviour
     }
 
 
-    public int GetAllPlayerCount()
+    public int GetPlayerCount()
     {
         return _players.Count;
-    }
- public int GetAllRacePlayerCount()
-    {
-        return _playersInRace.Count;
-    }
- public int GetAllSpectatorPlayerCount()
-    {
-        return _spectators.Count;
     }
 
     public void RemovePlayer(PlayerInfo player)
@@ -136,34 +140,21 @@ public class PolePositionManager : NetworkBehaviour
         }
     }
 
-    [Server]
     public string GetRaceProgress()
     {
         // Update car arc-lengths
         float[] arcLengths = new float[MaxPlayers];
 
 
-
         for (int i = 0; i < _playersInRace.Count; ++i)
         {
             if (_playersInRace[i] != null)
             {
-                _playersInRace[i].CurrentArc = ComputeCarArcLength(i);
+                arcLengths[i] = ComputeCarArcLength(i);
             }
         }
 
-        _playersInRace.Sort((a, b) =>
-        {
-            if (a.CurrentLap != b.CurrentLap)
-
-            {
-                return b.CurrentLap.CompareTo(a.CurrentLap);
-            }
-            else
-            {
-                return b.CurrentArc.CompareTo(a.CurrentArc);
-            }
-        });
+        _playersInRace.Sort(new PlayerInfoComparer(arcLengths));
 
         string raceOrder = "";
         foreach (var player in _playersInRace)
@@ -267,6 +258,8 @@ public class PolePositionManager : NetworkBehaviour
             _playersInRace[i].CanMove = isActiveMovement;
         }
 
+        startingTime = _timer.GetCurrentServerTime();
+        lapStartingTime = startingTime;
     }
 
     [Server]
@@ -278,10 +271,10 @@ public class PolePositionManager : NetworkBehaviour
         {
             _playersInRace[i].CanMove = isActiveMovement;
         }
-        
+
 
     }
-    
+
     [ClientRpc]
     public void RpcEndRace()
     {
