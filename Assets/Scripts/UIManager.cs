@@ -316,8 +316,6 @@ public class UIManager : MonoBehaviour
         playerIsViewer = false;
         NetworkClient.AddPlayer();
         ActivatePersonalizationMenu();
-        
-        
     }
 
     private void Spectate()
