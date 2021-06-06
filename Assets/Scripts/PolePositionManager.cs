@@ -30,18 +30,9 @@ public class PolePositionManager : NetworkBehaviour
 
     [SyncVar] public bool isActiveMovement = false;
 
-    [SyncVar(hook = nameof(HandleTimerUpdate))]
-    public double _currentTime;
-
-
-    public double myCurrentTime;
-
     [SyncVar] public bool arePlayersReady;
 
     private bool countDownStarted;
-
-    [SyncVar] public double startingTime;
-    [SyncVar] public double lapStartingTime;
 
     double threshHold;
 
@@ -65,33 +56,31 @@ public class PolePositionManager : NetworkBehaviour
     {
         _uiManager.UpdateRaceRank(GetRaceProgress());
 
-        if (!_isRaceInProgress && isServer)
+        if (isServer)
         {
-            ArePlayersReady();
+            if (_isRaceInProgress)
+            {
+
+                string raceProgress = GetRaceProgress();
+
+                _uiManager.UpdateRaceRank(raceProgress);
+
+                RpcUpdateRaceProgress(raceProgress);
+
+            }
+            else { 
+            ArePlayersReady();}
+
         }
 
-        ServerUpdateTimer();
         UpdateClientLists();
     }
 
-
-    private void HandleTimerUpdate(double oldDouble, double newDouble)
+    [ClientRpc]
+    void RpcUpdateRaceProgress(string raceProgress)
     {
-        myCurrentTime = newDouble;
-        _uiManager.UpdateTotalTime(newDouble);
-    }
+        _uiManager.UpdateRaceRank(raceProgress);
 
-    [Server]
-    public void ServerUpdateTimer()
-    {
-        _currentTime = _timer.GetCurrentServerTime() - startingTime;
-        Debug.Log(_currentTime);
-    }
-
-
-    public double GetCurrentRaceTime()
-    {
-        return _currentTime;
     }
 
 
@@ -257,9 +246,6 @@ public class PolePositionManager : NetworkBehaviour
         {
             _playersInRace[i].CanMove = isActiveMovement;
         }
-
-        startingTime = _timer.GetCurrentServerTime();
-        lapStartingTime = startingTime;
     }
 
     [Server]
