@@ -497,13 +497,16 @@ public class PlayerController : NetworkBehaviour
             {
                 //Update laps
                 _currentLap++;
+                m_PlayerInfo.currentLap ++;
                 ResetLapTime(currentLapTime);
 
                 if (_currentLap == pole.MaxLaps)
                 {
                     _currentLap = 0;
+                    m_PlayerInfo.currentLap = 0;
+                    pole.UpdateGui();
                     pole.EndRace();
-
+    
                 }
                 Debug.Log("Current Lap = " + _currentLap);
             }
@@ -527,6 +530,8 @@ public class PlayerController : NetworkBehaviour
             Debug.Log("Wrong Way!!!!");
         }
     }
+    
+    
 
 
     void DisplayNextCamera()
@@ -600,6 +605,7 @@ public class PlayerController : NetworkBehaviour
     public void GetUiTotalTime()
     {
         _totalTime = t.GetCurrentServerTime() - _startingRaceTime;
+        m_PlayerInfo.totalTIme = _totalTime;
     }
 
     public double GetUpdatedTotalTime()

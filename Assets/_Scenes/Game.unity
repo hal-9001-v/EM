@@ -419,7 +419,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   syncMode: 0
   syncInterval: 0.1
-  MaxLaps: 2
+  MaxLaps: 5
+  MinimumNamberOfPlayers: 1
   _playersInRace: []
   _currentPositions: 
   myCurrentPositions: 
@@ -934,6 +935,11 @@ PrefabInstance:
       propertyPath: m_LocalScale.y
       value: 0.1
       objectReference: {fileID: 0}
+    - target: {fileID: 3251817754266928329, guid: 2356b61abd7af864eadff2e62f8c8586,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 19.74
+      objectReference: {fileID: 0}
     - target: {fileID: 3251817754324251583, guid: 2356b61abd7af864eadff2e62f8c8586,
         type: 3}
       propertyPath: m_LocalScale.y
@@ -1103,6 +1109,11 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 2884557716841092324, guid: 5c339809502a33749b546f6663bcfb75,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 3010251750485384644, guid: 5c339809502a33749b546f6663bcfb75,
         type: 3}
       propertyPath: sceneId
@@ -1112,6 +1123,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_AssetId
       value: 5c339809502a33749b546f6663bcfb75
+      objectReference: {fileID: 0}
+    - target: {fileID: 5643874579725500154, guid: 5c339809502a33749b546f6663bcfb75,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6415909394017212769, guid: 5c339809502a33749b546f6663bcfb75,
         type: 3}
@@ -1182,6 +1198,21 @@ PrefabInstance:
         type: 3}
       propertyPath: m_TextStyleHashCode
       value: -1183493901
+      objectReference: {fileID: 0}
+    - target: {fileID: 9080663046723071471, guid: 5c339809502a33749b546f6663bcfb75,
+        type: 3}
+      propertyPath: m_text
+      value: '1st:  Player 1                                               Time:
+        00:00:000
+
+        2nd: Player 2                                             
+        Time:00:00:000
+
+        3rd: Player 3                                             
+        Time: 00:00:000
+
+        4th: Player 4                                              
+        Time: 00:00:000'
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5c339809502a33749b546f6663bcfb75, type: 3}

@@ -62,6 +62,7 @@ public class SetupPlayer : NetworkBehaviour
         _playerInfo.ID = _id;
         int aux = _id + 1;
         _playerInfo.Name = "Player " + aux;
+        _playerInfo.publicName= "Player " + aux;
         _playerInfo.CurrentColor = new Color(0.91f,0.33f,0.33f,1);
         _playerInfo.CurrentLap = 0;
         _playerInfo.IsReady = false;
@@ -218,9 +219,9 @@ public class SetupPlayer : NetworkBehaviour
     public void SetDisplayName(string newName)
     {
         int aux = _id + 1;
-        if (newName.Length < 2 || newName.Length > 14 && newName != null)  _name = "Player " + aux;
+        if (newName.Length < 2 || newName.Length > 14 )  _name = "Player " + aux;
         else{ _name = newName;
-        if(_playerInfo!=null) _playerInfo.publicName = newName;
+        _playerInfo.publicName = newName;
 
         }
     }

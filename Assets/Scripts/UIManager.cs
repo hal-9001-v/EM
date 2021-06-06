@@ -227,7 +227,7 @@ public class UIManager : MonoBehaviour
     }
 
     public void UpdateEndResult(List <PlayerInfo> players, SyncList<double> timeList ){
-
+    
         positions.text = "";
         string[] times = new string[timeList.Count];
 
@@ -239,29 +239,31 @@ public class UIManager : MonoBehaviour
         
         string numberer;
         
-        int j = 1;
+        int j = 0;
 
         foreach(PlayerInfo p in players){
             switch(j){
 
-                case 1: numberer = "st";
+                case 0: numberer = "st";
                 break;
             
-                case 2: numberer = "nd";
+                case 1: numberer = "nd";
                 break;
             
-                case 3: numberer = "rd";
+                case 2: numberer = "rd";
                 break;
             
-                case 4: numberer = "th";
+                case 3: numberer = "th";
                 break;
 
                 default: numberer = "th";
                 break;
             
             }
-        positions.text += j + numberer + players[j-1].publicName + "                  "+ times[j-1] + "\n";
-        j++;
+
+            int aux = j + 1;
+            positions.text += aux + numberer + players[j].publicName + "                  "+ times[j] + "\n";
+            j++;
 
 
         }
@@ -361,11 +363,15 @@ public class UIManager : MonoBehaviour
     }
 
     public void ActivateEndHud(){
-
-        ActivateMainMenu();
         mainMenu.SetActive(false);
+        inGameHUD.SetActive(false);
+        playMenu.SetActive(false);
+        personalizationMenu.SetActive(false);
+        countDown.SetActive(false);
+        UpdateChat(false, false);
+        pauseHUD.SetActive(false);
         endRaceHUD.SetActive(true);
-        warning.SetActive(false);
+        warning.SetActive((false));
     }
     
     

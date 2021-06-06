@@ -10,13 +10,14 @@ public class PolePositionManager : NetworkBehaviour
 
     public int MaxLaps = 2;
 
-    private const int MinimumNamberOfPlayers = 2;
+    [SerializeField] private int MinimumNamberOfPlayers = 2;
 
     private MyNetworkManager _networkManager;
 
     private List<PlayerInfo> _players = new List<PlayerInfo>();
     public List<PlayerInfo> _playersInRace = new List<PlayerInfo>();
     private SyncList<PlayerInfo> _spectators = new SyncList<PlayerInfo>();
+    public  SyncList<double> _totalTimes = new SyncList<double>();
 
     [SyncVar (hook = nameof(HandlePositionChange))] public string _currentPositions;
     public string myCurrentPositions;
@@ -62,7 +63,6 @@ public class PolePositionManager : NetworkBehaviour
         {
             if (_isRaceInProgress)
             {
-                
                 string raceProgress = GetRaceProgress(_playersInRace);
                 _uiManager.UpdateRaceRank(raceProgress);
                 RpcUpdateRaceProgress(raceProgress);
@@ -70,8 +70,15 @@ public class PolePositionManager : NetworkBehaviour
             else { 
             ArePlayersReady();}
         }
-
-        if(isLocalPlayer) _uiManager.UpdateRaceRank(myCurrentPositions);
+        UpdateGui();
+        
+        if (isLocalPlayer)
+        {
+            
+            _uiManager.UpdateRaceRank(myCurrentPositions);
+                
+        
+        }
     }
 
     private void HandlePositionChange(string oldString, string newString){
@@ -266,10 +273,20 @@ public class PolePositionManager : NetworkBehaviour
             .CmdSetRaceStartTime(_timer.GetCurrentServerTime());
     }
 
+    public void UpdateGui()
+    {
+ 
+            GetTimes(_playersInRace);
+            _uiManager.UpdateEndResult(_playersInRace, _totalTimes);
+
+    }
 
     [Server]
     public void EndRace()
     {
+        _isRaceInProgress = false;
+
+
         isActiveMovement = false;
         RpcEndRace();
         for (int i = 0; i < _players.Count; i++)
@@ -277,8 +294,7 @@ public class PolePositionManager : NetworkBehaviour
             _players[i].OnDestroy();
         }
 
-        _isRaceInProgress = false;
-
+        
         _players.Clear();
         _playersInRace.Clear();
         _spectators.Clear();
@@ -286,17 +302,31 @@ public class PolePositionManager : NetworkBehaviour
 
     [ClientRpc]
     public void RpcEndRace()
-    {
+    {   
+        
+        _uiManager.ActivateEndHud();
+
         for (int i = 0; i < _players.Count; i++)
         {
             _players[i].OnDestroy();
         }
-        _uiManager.ActivateEndHud();
 
         StartCoroutine(RankingCountDown());
 
         _players.Clear();
         _playersInRace.Clear();
+        
+        
+    }
+    
+    [Server]
+    public void GetTimes(List<PlayerInfo> p)
+    {
+        foreach (PlayerInfo player  in p)
+        {
+            
+            _totalTimes.Add(player.totalTIme);
+        }
         
         
     }

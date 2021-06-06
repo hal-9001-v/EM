@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using Mirror;
 using UnityEngine;
@@ -6,6 +7,8 @@ using UnityEngine;
 public class PlayerInfo : NetworkBehaviour
 {
     [SyncVar] public string publicName;
+    [SyncVar] public int currentLap;
+    [SyncVar] public double totalTIme;
     
     
 
@@ -35,7 +38,9 @@ public class PlayerInfo : NetworkBehaviour
     {
         return Name;
     }
+
     
+
     public void OnDestroy()
     {
         Destroy(gameObject);
