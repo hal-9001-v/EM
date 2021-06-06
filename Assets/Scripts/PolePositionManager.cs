@@ -10,7 +10,7 @@ public class PolePositionManager : NetworkBehaviour
 
     public int MaxLaps = 2;
 
-    private const int MinimumNamberOfPlayers = 1;
+    private const int MinimumNamberOfPlayers = 2;
 
     private MyNetworkManager _networkManager;
 
@@ -259,7 +259,11 @@ public class PolePositionManager : NetworkBehaviour
         {
             _playersInRace[i].CanMove = isActiveMovement;
         }
+                _uiManager.myChangingPlayer.gameObject.GetComponent<PlayerController>()
+            .CmdSetRaceStartTime(_timer.GetCurrentServerTime());
+
     }
+
 
     [Server]
     public void EndRace()
@@ -286,5 +290,7 @@ public class PolePositionManager : NetworkBehaviour
         {
             _playersInRace[i].CanMove = isActiveMovement;
         }
+        
+
     }
 }
