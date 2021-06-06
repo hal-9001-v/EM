@@ -316,14 +316,17 @@ public class UIManager : MonoBehaviour
         playerIsViewer = false;
         NetworkClient.AddPlayer();
         ActivatePersonalizationMenu();
+        
+        
     }
 
     private void Spectate()
     {
+        playerIsViewer = true;
         NetworkClient.AddPlayer();
         //      myChangingPlayer.IsViewer = true;
-        playerIsViewer = true;
         ActivateSpectateMenu();
+        
     }
 
     private void Train()

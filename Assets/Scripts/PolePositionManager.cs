@@ -6,10 +6,18 @@ using UnityEngine;
 //public class PolePositionManager : NetworkBehaviour
 public class PolePositionManager : NetworkBehaviour
 {
-    const int MaxPlayers = 4;
+    private const int MaxPlayers = 4;
+    
+    public int MaxLaps = 2;
+
+    private const int MinimumNamberOfPlayers = 1;
+
     private MyNetworkManager _networkManager;
 
-    public List<PlayerInfo> _players = new List<PlayerInfo>();
+    private List<PlayerInfo> _players = new List<PlayerInfo>();
+    public List<PlayerInfo> _playersInRace = new List<PlayerInfo>();
+    public SyncList<PlayerInfo> _spectators = new SyncList<PlayerInfo>();
+
 
     private CircuitController _circuitController;
     private GameObject[] _debuggingSpheres;
@@ -63,7 +71,9 @@ public class PolePositionManager : NetworkBehaviour
         }
 
         ServerUpdateTimer();
+        UpdateClientLists();
     }
+    
 
     private void HandleTimerUpdate(double oldDouble, double newDouble)
     {
@@ -84,17 +94,24 @@ public class PolePositionManager : NetworkBehaviour
         return _currentTime;
     }
 
+    
     public void AddPlayer(PlayerInfo player)
     {
-        if (_players.Count < MaxPlayers)
+        _players.Add(player);
+        
+    }
+
+
+
+    [Server]
+    public void UpdateClientLists()
+    {
+        foreach (var player in _playersInRace)
         {
-            _players.Add(player);
-        }
-        else
-        {
-            Debug.Log("CARRERA LLENA");
+            _spectators.Add(player);
         }
     }
+
 
     public int GetPlayerCount()
     {
@@ -129,18 +146,18 @@ public class PolePositionManager : NetworkBehaviour
         float[] arcLengths = new float[MaxPlayers];
 
 
-        for (int i = 0; i < _players.Count; ++i)
+        for (int i = 0; i < _playersInRace.Count; ++i)
         {
-            if (_players[i] != null)
+            if (_playersInRace[i] != null)
             {
                 arcLengths[i] = ComputeCarArcLength(i);
             }
         }
 
-        _players.Sort(new PlayerInfoComparer(arcLengths));
+        _playersInRace.Sort(new PlayerInfoComparer(arcLengths));
 
         string raceOrder = "";
-        foreach (var player in _players)
+        foreach (var player in _playersInRace)
         {
             if (player != null)
             {
@@ -156,7 +173,7 @@ public class PolePositionManager : NetworkBehaviour
         // Compute the projection of the car position to the closest circuit 
         // path segment and accumulate the arc-length along of the car along
         // the circuit.
-        Vector3 carPos = this._players[id].transform.position;
+        Vector3 carPos = this._playersInRace[id].transform.position;
 
         int segIdx;
         float carDist;
@@ -165,14 +182,14 @@ public class PolePositionManager : NetworkBehaviour
             this._circuitController.ComputeClosestPointArcLength(carPos, out segIdx, out carProj, out carDist);
 
         this._debuggingSpheres[id].transform.position = carProj;
-        if (this._players[id].CurrentLap == 0)
+        if (this._playersInRace[id].CurrentLap == 0)
         {
             minArcL -= _circuitController.CircuitLength;
         }
         else
         {
             minArcL += _circuitController.CircuitLength *
-                       (_players[id].CurrentLap - 1);
+                       (_playersInRace[id].CurrentLap - 1);
         }
 
         return minArcL;
@@ -203,12 +220,12 @@ public class PolePositionManager : NetworkBehaviour
     private void ArePlayersReady()
     {
         int count = 0;
-        for (int i = 0; i < _players.Count; i++)
+        for (int i = 0; i < _playersInRace.Count; i++)
         {
-            if (_players[i].IsReady) count++;
+            if (_playersInRace[i].IsReady) count++;
         }
 
-        if (count > _players.Count / 2 && _players.Count >= 2)
+        if (count > _playersInRace.Count / 2 && _playersInRace.Count >= MinimumNamberOfPlayers)
         {
             _isRaceInProgress = true;
             RpcStarCountDownUI();
@@ -227,21 +244,43 @@ public class PolePositionManager : NetworkBehaviour
     private void SetMovementToPlayers()
     {
         RpcSetMovementToPlayers();
-        for (int i = 0; i < _players.Count; i++)
+        for (int i = 0; i < _playersInRace.Count; i++)
         {
-            _players[i].CanMove = isActiveMovement;
+            _playersInRace[i].CanMove = isActiveMovement;
         }
     }
 
     [ClientRpc]
     private void RpcSetMovementToPlayers()
     {
-        for (int i = 0; i < _players.Count; i++)
+        for (int i = 0; i < _playersInRace.Count; i++)
         {
-            _players[i].CanMove = isActiveMovement;
+            _playersInRace[i].CanMove = isActiveMovement;
         }
 
         startingTime = _timer.GetCurrentServerTime();
         lapStartingTime = startingTime;
+    }
+
+    [Server]
+    public void EndRace()
+    {
+        isActiveMovement = false;
+        RpcEndRace();
+        for (int i = 0; i < _playersInRace.Count; i++)
+        {
+            _playersInRace[i].CanMove = isActiveMovement;
+        }
+        
+
+    }
+    
+    [ClientRpc]
+    public void RpcEndRace()
+    {
+        for (int i = 0; i < _playersInRace.Count; i++)
+        {
+            _playersInRace[i].CanMove = isActiveMovement;
+        }
     }
 }

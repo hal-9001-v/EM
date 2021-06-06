@@ -17,8 +17,6 @@ public class SetupPlayer : NetworkBehaviour
     [SyncVar(hook = nameof(HandleDisplayNameUpdated))]
     private string _name;
 
-    public bool IsViewer;
-
     [SyncVar(hook = nameof(HandleDisplayColorUpdated))]
     private Color _carColor;
 
@@ -46,6 +44,7 @@ public class SetupPlayer : NetworkBehaviour
     {
         base.OnStartServer();        
         _id = NetworkServer.connections.Count - 1;
+        
         _polePositionManager.AddPlayer(_playerInfo);
     }
 
@@ -63,8 +62,40 @@ public class SetupPlayer : NetworkBehaviour
         _playerInfo.CurrentLap = 0;
         _playerInfo.IsReady = false;
         _playerInfo.CanMove = false;
+        
+        if (_uiManager.playerIsViewer)
+        {
+            _playerInfo.IsViewer = true;
+        }
+        else
+        {
+            _playerInfo.IsViewer = false;
+        
+            CmdAddPlayerInRace(_playerInfo);    
+        }
         _polePositionManager.AddPlayer(_playerInfo);
     }
+
+    [Command]
+    void CmdAddPlayerInRace(PlayerInfo playerInfo)
+    {
+        AddPlayerInRace(playerInfo);
+    }
+
+    [Server]
+    void AddPlayerInRace(PlayerInfo playerInfo)
+    {
+        _polePositionManager._playersInRace.Add(playerInfo);
+        RpcAddPlayerInRace(playerInfo);
+    }
+
+    [ClientRpc]
+    void RpcAddPlayerInRace(PlayerInfo playerInfo)
+    {
+        _polePositionManager._playersInRace.Add(playerInfo);
+    }
+    
+
 
     /// <summary>
     /// Called when the local player object has been set up.
@@ -76,7 +107,7 @@ public class SetupPlayer : NetworkBehaviour
         CmdSetColor(_playerInfo.CurrentColor);
         InitializeInput();
         _playerController.InitializeInput(_input);
-        
+
         
     }
 
@@ -222,7 +253,7 @@ public class SetupPlayer : NetworkBehaviour
     {
         _playerInfo.IsReady = true;
     }
-
+    
 
 
     #endregion

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
 using UnityEngine;
 using Mirror;
 using UnityEngine.InputSystem;
@@ -133,10 +134,7 @@ public class PlayerController : NetworkBehaviour
 
         _input.PC.Camera.performed += ctx =>
         {
-            if (ctx.ReadValue<float>() > 0)
-                DisplayNextCamera();
-            else
-                DisplayPreviousCamera();
+            DisplayNextCamera();
         };
 
 
@@ -455,6 +453,7 @@ public class PlayerController : NetworkBehaviour
     }
 
 
+
     [Command]
     public void CmdCheckPointCheck(string name, PolePositionManager _polePositionManager)
     {
@@ -476,6 +475,11 @@ public class PlayerController : NetworkBehaviour
             {
                 //Update laps
                 _currentLap++;
+                if (_currentLap == _polePositionManager.MaxLaps)
+                {
+                    _currentLap = 0;
+                    _polePositionManager.EndRace();
+                }
                 ResetLapTime();
                 Debug.Log("Current Lap = " + _currentLap);
             }
@@ -503,33 +507,33 @@ public class PlayerController : NetworkBehaviour
 
     void DisplayNextCamera()
     {
-        if (mode == 1 && _polePositionManager._players.Count != 0)
+        if (mode == 1 && _polePositionManager._spectators.Count != 0)
         {
             _currentCamera++;
 
-            if (_currentCamera >= _polePositionManager._players.Count)
+            if (_currentCamera >= _polePositionManager._spectators.Count)
             {
                 _currentCamera = 0;
             }
 
             //_camera.m_Focus = _polePositionManager.PlayerTransforms[_currentCamera].gameObject;
-            FindObjectOfType<CameraController>().m_Focus = _polePositionManager._players[_currentCamera].transform;
+            FindObjectOfType<CameraController>().m_Focus = _polePositionManager._spectators[_currentCamera].transform;
         }
     }
 
     void DisplayPreviousCamera()
     {
-        if (mode == 1 && _polePositionManager._players.Count != 0)
+        if (mode == 1 && _polePositionManager._playersInRace.Count != 0)
         {
             _currentCamera--;
 
             if (_currentCamera < 0)
             {
-                _currentCamera = _polePositionManager._players.Count - 1;
+                _currentCamera = _polePositionManager._playersInRace.Count - 1;
             }
 
             //_camera.m_Focus = _polePositionManager.PlayerTransforms[_currentCamera].gameObject;
-            FindObjectOfType<CameraController>().m_Focus = _polePositionManager._players[_currentCamera].transform;
+            FindObjectOfType<CameraController>().m_Focus = _polePositionManager._playersInRace[_currentCamera].transform;
         }
     }
 
