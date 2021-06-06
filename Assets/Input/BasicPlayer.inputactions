@@ -14,14 +14,6 @@
                     "interactions": ""
                 },
                 {
-                    "name": "Camera",
-                    "type": "Button",
-                    "id": "3d382b10-8b82-4386-8d36-482cc5042d15",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": ""
-                },
-                {
                     "name": "Brake",
                     "type": "Button",
                     "id": "770f1879-3cfe-4890-ab88-a7b9ae647940",
@@ -33,6 +25,14 @@
                     "name": "Pause",
                     "type": "Button",
                     "id": "e2b55f53-d436-4acd-b0e5-0b65b41f05f8",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": ""
+                },
+                {
+                    "name": "Send_Msg",
+                    "type": "Button",
+                    "id": "d235c8a1-781f-4a0c-9fe6-6e2088091821",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": ""
@@ -172,37 +172,15 @@
                     "isPartOfComposite": false
                 },
                 {
-                    "name": "1D Axis",
-                    "id": "391ca701-1f10-43e2-90f0-481cffc983d0",
-                    "path": "1DAxis(whichSideWins=1)",
+                    "name": "",
+                    "id": "7e368439-5bf4-415c-b642-b12c20636151",
+                    "path": "<Keyboard>/enter",
                     "interactions": "",
                     "processors": "",
-                    "groups": "Car",
-                    "action": "Camera",
-                    "isComposite": true,
+                    "groups": "",
+                    "action": "Send_Msg",
+                    "isComposite": false,
                     "isPartOfComposite": false
-                },
-                {
-                    "name": "Negative",
-                    "id": "66b4e157-5535-45d6-bb59-31b56ba9b47c",
-                    "path": "<Keyboard>/a",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Car",
-                    "action": "Camera",
-                    "isComposite": false,
-                    "isPartOfComposite": true
-                },
-                {
-                    "name": "Positive",
-                    "id": "6d865477-f18f-4453-8616-15fcb0f8fed9",
-                    "path": "<Keyboard>/d",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Car",
-                    "action": "Camera",
-                    "isComposite": false,
-                    "isPartOfComposite": true
                 }
             ]
         }

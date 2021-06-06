@@ -212,6 +212,7 @@ GameObject:
   - component: {fileID: 449604030476931776}
   - component: {fileID: 3466774584401487325}
   - component: {fileID: 1137246169109603126}
+  - component: {fileID: 895239883371805888}
   - component: {fileID: 6346869062069434778}
   - component: {fileID: 2697569808015383802}
   - component: {fileID: 2255716820238388577}
@@ -320,6 +321,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   syncMode: 0
   syncInterval: 0.1
+  _ready: 0
   _meshRenderer: {fileID: 3124799276312422027}
   _nameText: {fileID: 5449054191196782406}
 --- !u!114 &3466774584401487325
@@ -364,6 +366,24 @@ MonoBehaviour:
   topSpeed: 200
   downForce: 1000
   slipLimit: 0.2
+  m_UImanager: {fileID: 0}
+  m_SetupPlayer: {fileID: 0}
+--- !u!114 &895239883371805888
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1508097745644926054}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b4a7be039769fb4ab7d5eb9bb1e2c96, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  syncMode: 0
+  syncInterval: 0.1
+  uiManager: {fileID: 6415909394017212768, guid: 5c339809502a33749b546f6663bcfb75,
+    type: 3}
 --- !u!114 &6346869062069434778
 MonoBehaviour:
   m_ObjectHideFlags: 0

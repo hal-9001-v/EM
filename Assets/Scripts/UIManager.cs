@@ -68,15 +68,19 @@ public class UIManager : MonoBehaviour
     [SerializeField]
     private GameObject warning;
 
-    #endregion
-
-    [HideInInspector] public SetupPlayer myChangingPlayer;
 
     [Header("CountDown")] [SerializeField] private GameObject countDown;
-
     [SerializeField] private TextMeshProUGUI numbersInCountDown;
 
     public bool playerIsViewer;
+
+    [Header("Chat")] [SerializeField] private GameObject chatObject;
+    [SerializeField] private TextMeshProUGUI chat;
+    [SerializeField] private TMP_InputField chatInput;
+
+    #endregion
+
+    [HideInInspector] public SetupPlayer myChangingPlayer;
 
     private void Awake()
     {
@@ -294,4 +298,23 @@ public class UIManager : MonoBehaviour
         MeshRenderer[] all = FindObjectsOfType<MeshRenderer>();
         foreach (MeshRenderer m in all) m.enabled = false;
     }
+
+    #region Chat
+
+    public GameObject GetChatObject()
+    {
+        return this.chatObject;
+    }
+
+    public TextMeshProUGUI GetChat()
+    {
+        return this.chat;
+    }
+
+    public TMP_InputField GetChatInput()
+    {
+        return this.chatInput;
+    }
+
+    #endregion
 }
