@@ -29,7 +29,7 @@ public class Timer : NetworkBehaviour
 
     private void Update()
     {
-        UpdateCurrentTime();
+        if (isServer) UpdateCurrentTime();
     }
 
     public double GetCurrentClientTime(){

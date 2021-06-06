@@ -319,8 +319,7 @@ public class PlayerController : NetworkBehaviour
     private void Teleport(GameObject temp, GameObject look)
     {
         gameObject.transform.position = temp.transform.position;
-        gameObject.transform.rotation =
-            Quaternion.Euler(new Vector3(gameObject.transform.rotation.x, 0, gameObject.transform.rotation.z));
+        gameObject.transform.rotation = Quaternion.Euler(new Vector3(gameObject.transform.rotation.x, 0, gameObject.transform.rotation.z));
         gameObject.transform.LookAt(look.transform);
     }
 

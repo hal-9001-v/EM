@@ -310,16 +310,18 @@ public class UIManager : MonoBehaviour
         playMenu.SetActive(false);
         inGameHUD.SetActive(true);
         countDown.SetActive(false);
-        UpdateChat(true, false);
     }
 
     private void ActivatePersonalizationMenu()
     {
+        chatObject.SetActive(true);
         mainMenu.SetActive(false);
         playMenu.SetActive(false);
         personalizationMenu.SetActive(true);
         inGameHUD.SetActive(false);
         countDown.SetActive(false);
+        UpdateChat(true, false);
+
     }
 
     private void ActivatePlayMenu()
