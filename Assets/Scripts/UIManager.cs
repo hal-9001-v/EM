@@ -263,6 +263,7 @@ public class UIManager : MonoBehaviour
 
     private void Spectate()
     {
+
         NetworkClient.AddPlayer();
         //      myChangingPlayer.IsViewer = true;
         playerIsViewer = true;

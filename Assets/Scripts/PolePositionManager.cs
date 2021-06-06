@@ -61,7 +61,6 @@ public class PolePositionManager : NetworkBehaviour
 
     }
 
-
     public void AddPlayer(PlayerInfo player)
     {
 

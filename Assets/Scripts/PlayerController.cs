@@ -64,9 +64,10 @@ public class PlayerController : NetworkBehaviour
     public int mode;
 
     int _currentCamera;
+
+    [SyncVar] public bool isViewer = false;
     CameraController _camera;
     private PolePositionManager _polePositionManager;
-
 
     private float Speed
     {
@@ -109,16 +110,23 @@ public class PlayerController : NetworkBehaviour
             _camera = FindObjectOfType<CameraController>();
             CmdCheckPointCheck(_startCollider.name);
 
-            if (m_UImanager.playerIsViewer) mode = 1;
+            if (m_UImanager.playerIsViewer)
+            {
+                mode = 1;
+                CmdSetViewer();
+
+            }
             else mode = 0;
 
             CmdPrepareForMode(mode);
         }
 
+    }
 
-
-        if (_camera == null) Debug.Log("Fux");
-
+    [Command]
+    void CmdSetViewer()
+    {
+        isViewer = true;
     }
 
     public void InitializeInput(BasicPlayer _input)
@@ -508,17 +516,34 @@ public class PlayerController : NetworkBehaviour
 
     void DisplayNextCamera()
     {
-        if (mode == 1 && _polePositionManager.players.Count != 0)
+        if (mode == 1)
         {
-            _currentCamera++;
+            List<PlayerInfo> players = _polePositionManager.players;
 
-            if (_currentCamera >= _polePositionManager.players.Count)
+            //This is terrible but, this is it.
+            players.FindAll((p) =>
             {
-                _currentCamera = 0;
+                if (p.GetComponent<PlayerController>().isViewer) return true;
+
+                return false;
+
+            });
+
+
+            if (players.Count != 0)
+            {
+
+                _currentCamera++;
+
+                if (_currentCamera >= players.Count)
+                {
+                    _currentCamera = 0;
+                }
+
+                //_camera.m_Focus = _polePositionManager.PlayerTransforms[_currentCamera].gameObject;
+                _camera.m_Focus = _polePositionManager.players[_currentCamera].transform;
             }
 
-            //_camera.m_Focus = _polePositionManager.PlayerTransforms[_currentCamera].gameObject;
-            FindObjectOfType<CameraController>().m_Focus = _polePositionManager.players[_currentCamera].transform;
 
         }
 
@@ -526,17 +551,31 @@ public class PlayerController : NetworkBehaviour
 
     void DisplayPreviousCamera()
     {
-        if (mode == 1 && _polePositionManager.players.Count != 0)
+        if (mode == 1)
         {
-            _currentCamera--;
+            List<PlayerInfo> players = _polePositionManager.players;
 
-            if (_currentCamera < 0)
+            players.FindAll((p) =>
             {
-                _currentCamera = _polePositionManager.players.Count - 1;
-            }
+                if (p.GetComponent<PlayerController>().isViewer) return true;
 
-            //_camera.m_Focus = _polePositionManager.PlayerTransforms[_currentCamera].gameObject;
-            FindObjectOfType<CameraController>().m_Focus = _polePositionManager.players[_currentCamera].transform;
+                return false;
+
+            });
+
+
+            if (players.Count != 0)
+            {
+
+                _currentCamera--;
+
+                {
+                    _currentCamera = players.Count - 1;
+                }
+
+
+                _camera.m_Focus = _polePositionManager.players[_currentCamera].transform;
+            }
 
 
         }
