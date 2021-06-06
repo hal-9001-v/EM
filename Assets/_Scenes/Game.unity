@@ -450,6 +450,7 @@ MonoBehaviour:
   syncMode: 0
   syncInterval: 0.1
   numPlayers: 0
+  players: []
   isClientRaceInProgress: 0
   isActiveMovement: 0
   isActiveClientMovement: 0
@@ -1126,6 +1127,11 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1182316016025318651, guid: 5c339809502a33749b546f6663bcfb75,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3010251750485384644, guid: 5c339809502a33749b546f6663bcfb75,
         type: 3}
       propertyPath: sceneId
@@ -1195,6 +1201,16 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6415909394493063714, guid: 5c339809502a33749b546f6663bcfb75,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8799916744305457296, guid: 5c339809502a33749b546f6663bcfb75,
+        type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5c339809502a33749b546f6663bcfb75, type: 3}

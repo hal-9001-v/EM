@@ -4509,8 +4509,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 24
-  m_fontSizeBase: 24
+  m_fontSize: 18
+  m_fontSizeBase: 18
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -5422,6 +5422,7 @@ MonoBehaviour:
   chatObject: {fileID: 1182316016025318651}
   chat: {fileID: 8799916744305457296}
   chatInput: {fileID: 8933912958257035135}
+  chatBox: {fileID: 4058601890348497834}
   myChangingPlayer: {fileID: 0}
 --- !u!1 &6415909394048335348
 GameObject:

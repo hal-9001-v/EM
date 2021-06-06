@@ -31,8 +31,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI currentPlayers;
 
 
-    [Header("Character Personalization + Ready Menu")]
-    [SerializeField]
+    [Header("Character Personalization + Ready Menu")] [SerializeField]
     private GameObject personalizationMenu;
 
     [SerializeField] private Button ready;
@@ -46,8 +45,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI readyText;
 
 
-    [Header("In-Game HUD")]
-    [SerializeField]
+    [Header("In-Game HUD")] [SerializeField]
     private GameObject inGameHUD;
 
     [SerializeField] private TextMeshProUGUI textSpeed;
@@ -55,8 +53,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI textPosition;
 
 
-    [Header("Pause Menu")]
-    [SerializeField]
+    [Header("Pause Menu")] [SerializeField]
     private GameObject pauseHUD;
 
     [SerializeField] private Button resume;
@@ -64,8 +61,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Button quit;
 
 
-    [Header("Wrong Way Warning")]
-    [SerializeField]
+    [Header("Wrong Way Warning")] [SerializeField]
     private GameObject warning;
 
 
@@ -77,6 +73,7 @@ public class UIManager : MonoBehaviour
     [Header("Chat")] [SerializeField] private GameObject chatObject;
     [SerializeField] private TextMeshProUGUI chat;
     [SerializeField] private TMP_InputField chatInput;
+    [SerializeField] private GameObject chatBox;
 
     #endregion
 
@@ -104,7 +101,6 @@ public class UIManager : MonoBehaviour
         else
         {
             textPosition.text = _manager.GetRaceProgress();
-
         }
     }
 
@@ -200,6 +196,17 @@ public class UIManager : MonoBehaviour
         numbersInCountDown.text = newText;
     }
 
+    public void UpdateChatLength()
+    {
+        int textLines = chat.textInfo.lineCount;
+
+        Debug.Log(textLines);
+
+        if (textLines > 18)
+        {
+            chat.text = string.Empty;
+        }
+    }
 
     private void ActivateMainMenu()
     {
@@ -208,6 +215,7 @@ public class UIManager : MonoBehaviour
         playMenu.SetActive(false);
         personalizationMenu.SetActive(false);
         countDown.SetActive(false);
+        UpdateChat(false, false);
     }
 
     public void ActivateInGameHUD()
@@ -217,7 +225,7 @@ public class UIManager : MonoBehaviour
         playMenu.SetActive(false);
         inGameHUD.SetActive(true);
         countDown.SetActive(false);
-
+        UpdateChat(true, false);
         myChangingPlayer.RpcActivateMovement();
     }
 
@@ -245,7 +253,8 @@ public class UIManager : MonoBehaviour
         playMenu.SetActive(false);
         personalizationMenu.SetActive(false);
         inGameHUD.SetActive(false);
-
+        chatObject.SetActive(true);
+        UpdateChat(true, true);
     }
 
     public void ActivateCountDown()
@@ -255,6 +264,13 @@ public class UIManager : MonoBehaviour
         personalizationMenu.SetActive(false);
         inGameHUD.SetActive(false);
         countDown.SetActive(true);
+    }
+
+    public void UpdateChat(bool t, bool b)
+    {
+        chatInput.gameObject.SetActive(b);
+        chat.gameObject.SetActive(t);
+        chatBox.gameObject.SetActive(t);
     }
 
     private void Play()
@@ -295,8 +311,9 @@ public class UIManager : MonoBehaviour
     {
         m_NetworkManager.StartServer();
         mainMenu.SetActive(false);
-        MeshRenderer[] all = FindObjectsOfType<MeshRenderer>();
-        foreach (MeshRenderer m in all) m.enabled = false;
+        UpdateChat(false, false);
+        Renderer[] all = FindObjectsOfType<Renderer>();
+        foreach (Renderer m in all) m.enabled = false;
     }
 
     #region Chat

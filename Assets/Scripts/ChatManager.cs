@@ -13,25 +13,21 @@ public class ChatManager : NetworkBehaviour
     {
         uiManager = FindObjectOfType<UIManager>();
         input = new BasicPlayer();
-        Debug.Log("This is UImanager " + uiManager.GetChatInput());
         if (isLocalPlayer)
-            uiManager.GetChatInput().onEndEdit.AddListener((msg) => Send(uiManager.GetChatInput().textComponent.text));
-
-        if (isLocalPlayer && hasAuthority)
         {
+            uiManager.GetChatInput().onEndEdit.AddListener((msg) => Send(uiManager.GetChatInput().textComponent.text));
         }
-    }
-
-    public override void OnStartAuthority()
-    {
-        base.OnStartAuthority();
-        uiManager.GetChatObject().SetActive(true);
-        Message += HandleNewMessage;
     }
 
     public void HandleNewMessage(string msg)
     {
         uiManager.GetChat().text += msg;
+    }
+
+    public override void OnStartAuthority()
+    {
+        base.OnStartAuthority();
+        Message += HandleNewMessage;
     }
 
     [Client]
@@ -43,12 +39,10 @@ public class ChatManager : NetworkBehaviour
         }
     }
 
-    [Client]
     public void Send(string msg)
     {
         if (!string.IsNullOrWhiteSpace(msg))
         {
-            Debug.Log(msg);
             CmdSendMsg(msg);
             uiManager.GetChatInput().text = string.Empty;
         }
@@ -63,6 +57,7 @@ public class ChatManager : NetworkBehaviour
     [ClientRpc]
     private void RpcSendToClients(string msg)
     {
+        uiManager.UpdateChatLength();
         Message?.Invoke($"\n{msg}");
     }
 }
