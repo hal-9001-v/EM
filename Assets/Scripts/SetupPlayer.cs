@@ -99,7 +99,7 @@ public class SetupPlayer : NetworkBehaviour
     [ClientRpc]
     void RpcAddPlayerInRace(PlayerInfo playerInfo)
     {
-       // _polePositionManager._playersInRace.Add(playerInfo);
+       //_polePositionManager._playersInRace.Add(playerInfo);
     }
     
 
@@ -110,7 +110,7 @@ public class SetupPlayer : NetworkBehaviour
     /// </summary>
     public override void OnStartLocalPlayer()
     {
-        CmdSetDisplayName(_playerInfo.Name);
+        CmdSetDisplayName(_playerInfo.publicName);
         CmdSetColor(_playerInfo.CurrentColor);
         InitializeInput();
         _playerController.InitializeInput(_input);
@@ -218,9 +218,9 @@ public class SetupPlayer : NetworkBehaviour
     public void SetDisplayName(string newName)
     {
         int aux = _id + 1;
-        if (newName.Length < 2 || newName.Length > 14)  _name = "Player " + aux;
+        if (newName.Length < 2 || newName.Length > 14 && newName != null)  _name = "Player " + aux;
         else{ _name = newName;
-        _playerInfo.publicName = newName;
+        if(_playerInfo!=null) _playerInfo.publicName = newName;
 
         }
     }
