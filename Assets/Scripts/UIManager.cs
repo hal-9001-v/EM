@@ -280,7 +280,7 @@ public class UIManager : MonoBehaviour
     [ContextMenu("Pruebo Interfaz Resultados")]
     public void TestFinalHud()
     {
-        List <PlayerInfo> players = _manager._players;
+        List <PlayerInfo> players = _manager._playersInRace;
         SyncList<double> timeList = new SyncList<double>();
         for (int i = 0; i < 4; i++){
             
