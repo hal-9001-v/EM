@@ -98,20 +98,6 @@ public class UIManager : MonoBehaviour
         warning.SetActive(false);
     }
 
-
-    private void Update()
-    {
-        if (_manager == null)
-        {
-            _manager = FindObjectOfType<PolePositionManager>();
-        }
-        else
-        {
-            textPosition.text = _manager.GetRaceProgress();
-        }
-    }
-
-
     private void Start()
     {
         buttonHost.onClick.AddListener(() => StartHost());

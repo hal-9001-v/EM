@@ -55,14 +55,30 @@ public class PolePositionManager : NetworkBehaviour
 
     private void Update()
     {
-        _uiManager.UpdateRaceRank(GetRaceProgress());
-
-        if (!_isRaceInProgress && isServer)
+        if (isServer)
         {
-            ArePlayersReady();
+            if (_isRaceInProgress)
+            {
+                string raceProgress = GetRaceProgress();
+
+                _uiManager.UpdateRaceRank(raceProgress);
+
+                RpcUpdateRaceProgress(raceProgress);
+            }
+            else
+            {
+                ArePlayersReady();
+            }
         }
 
         ServerUpdateTimer();
+    }
+
+    [ClientRpc]
+    void RpcUpdateRaceProgress(string raceProgress)
+    {
+        _uiManager.UpdateRaceRank(raceProgress);
+
     }
 
     private void HandleTimerUpdate(double oldDouble, double newDouble)
@@ -123,21 +139,34 @@ public class PolePositionManager : NetworkBehaviour
         }
     }
 
+    [Server]
     public string GetRaceProgress()
     {
         // Update car arc-lengths
         float[] arcLengths = new float[MaxPlayers];
 
 
+
         for (int i = 0; i < _players.Count; ++i)
         {
             if (_players[i] != null)
             {
-                arcLengths[i] = ComputeCarArcLength(i);
+                _players[i].CurrentArc = ComputeCarArcLength(i);
             }
         }
 
-        _players.Sort(new PlayerInfoComparer(arcLengths));
+        _players.Sort((a, b) =>
+        {
+            if (a.CurrentLap != b.CurrentLap)
+
+            {
+                return b.CurrentLap.CompareTo(a.CurrentLap);
+            }
+            else
+            {
+                return b.CurrentArc.CompareTo(a.CurrentArc);
+            }
+        });
 
         string raceOrder = "";
         foreach (var player in _players)
@@ -150,6 +179,7 @@ public class PolePositionManager : NetworkBehaviour
 
         return raceOrder;
     }
+
 
     float ComputeCarArcLength(int id)
     {
@@ -165,6 +195,7 @@ public class PolePositionManager : NetworkBehaviour
             this._circuitController.ComputeClosestPointArcLength(carPos, out segIdx, out carProj, out carDist);
 
         this._debuggingSpheres[id].transform.position = carProj;
+        /*
         if (this._players[id].CurrentLap == 0)
         {
             minArcL -= _circuitController.CircuitLength;
@@ -174,7 +205,7 @@ public class PolePositionManager : NetworkBehaviour
             minArcL += _circuitController.CircuitLength *
                        (_players[id].CurrentLap - 1);
         }
-
+        */
         return minArcL;
     }
 
