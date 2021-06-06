@@ -199,7 +199,6 @@ public class UIManager : MonoBehaviour
         numbersInCountDown.text = newText;
     }
 
- HEAD
     public void UpdateChatLength()
     {
         int textLines = chat.textInfo.lineCount;
@@ -210,6 +209,7 @@ public class UIManager : MonoBehaviour
         {
             chat.text = string.Empty;
         }
+    }
 
     public void UpdateTotalTime(double time){
 
