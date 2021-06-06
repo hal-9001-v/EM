@@ -18,6 +18,8 @@ public class PolePositionManager : NetworkBehaviour
     public List<PlayerInfo> _playersInRace = new List<PlayerInfo>();
     public SyncList<PlayerInfo> _spectators = new SyncList<PlayerInfo>();
 
+    [SyncVar (hook = nameof(HandlePositionChange))] public string _currentPositions;
+    public string myCurrentPositions;
 
     private CircuitController _circuitController;
     private GameObject[] _debuggingSpheres;
@@ -54,14 +56,14 @@ public class PolePositionManager : NetworkBehaviour
 
     private void Update()
     {
-        _uiManager.UpdateRaceRank(GetRaceProgress());
+       
 
         if (isServer)
         {
             if (_isRaceInProgress)
             {
-
-                string raceProgress = GetRaceProgress();
+                
+                string raceProgress = GetRaceProgress(_playersInRace);
 
                 _uiManager.UpdateRaceRank(raceProgress);
 
@@ -71,11 +73,27 @@ public class PolePositionManager : NetworkBehaviour
             else { 
             ArePlayersReady();}
 
+            UpdateClientLists();
         }
 
-        UpdateClientLists();
+        if(isLocalPlayer) _uiManager.UpdateRaceRank(myCurrentPositions);
     }
 
+    private void HandlePositionChange(string oldString, string newString){
+
+        myCurrentPositions = newString;
+
+    }
+
+    
+    [Server]
+    public void ServerSetRaceProgress(string s){
+
+        _currentPositions = s;
+        RpcUpdateRaceProgress(s);
+
+    }
+    
     [ClientRpc]
     void RpcUpdateRaceProgress(string raceProgress)
     {
@@ -91,13 +109,12 @@ public class PolePositionManager : NetworkBehaviour
     }
 
 
-
     [Server]
     public void UpdateClientLists()
     {
         foreach (var player in _playersInRace)
         {
-            _spectators.Add(player);
+            //_spectators.Add(player);
         }
     }
 
@@ -130,22 +147,22 @@ public class PolePositionManager : NetworkBehaviour
     }
 
     [Server]
-    public string GetRaceProgress()
+    public string GetRaceProgress(List<PlayerInfo> racePlayers)
     {
         // Update car arc-lengths
         float[] arcLengths = new float[MaxPlayers];
 
-        
 
-        for (int i = 0; i < _playersInRace.Count; ++i)
+
+        for (int i = 0; i < racePlayers.Count; ++i)
         {
-            if (_playersInRace[i] != null)
+            if (racePlayers[i] != null)
             {
-                _playersInRace[i].CurrentArc = ComputeCarArcLength(i);
+                racePlayers[i].CurrentArc = ComputeCarArcLength(i);
             }
         }
 
-        _playersInRace.Sort((a, b) =>
+        racePlayers.Sort((a, b) =>
         {
             if (a.CurrentLap != b.CurrentLap)
 
@@ -159,14 +176,16 @@ public class PolePositionManager : NetworkBehaviour
         });
 
         string raceOrder = "";
-        foreach (var player in _playersInRace)
+        foreach (var player in racePlayers)
         {
             if (player != null)
             {
-                raceOrder += player.Name + " ";
+                raceOrder += player.publicName + " ";
             }
         }
-
+        
+        Debug.Log("RaceOrder " + raceOrder);
+        ServerSetRaceProgress(raceOrder);
         return raceOrder;
     }
 

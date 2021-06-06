@@ -5,6 +5,10 @@ using UnityEngine;
 
 public class PlayerInfo : NetworkBehaviour
 {
+    [SyncVar] public string publicName;
+    
+    
+
     public string Name { get; set; }
 
     public int ID { get; set; }

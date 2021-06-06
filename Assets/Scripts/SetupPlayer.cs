@@ -71,11 +71,13 @@ public class SetupPlayer : NetworkBehaviour
         {
             _playerInfo.IsViewer = false;
         
-            CmdAddPlayerInRace(_playerInfo);    
+            if(isLocalPlayer)CmdAddPlayerInRace(_playerInfo);    
         }
         _polePositionManager.AddPlayer(_playerInfo);
+
     }
 
+    
     [Command]
     void CmdAddPlayerInRace(PlayerInfo playerInfo)
     {
@@ -85,6 +87,7 @@ public class SetupPlayer : NetworkBehaviour
     [Server]
     void AddPlayerInRace(PlayerInfo playerInfo)
     {
+        playerInfo.Name = GetDisplayName();
         _polePositionManager._playersInRace.Add(playerInfo);
         RpcAddPlayerInRace(playerInfo);
     }
@@ -92,7 +95,7 @@ public class SetupPlayer : NetworkBehaviour
     [ClientRpc]
     void RpcAddPlayerInRace(PlayerInfo playerInfo)
     {
-        _polePositionManager._playersInRace.Add(playerInfo);
+       // _polePositionManager._playersInRace.Add(playerInfo);
     }
     
 
@@ -185,6 +188,7 @@ public class SetupPlayer : NetworkBehaviour
         Debug.Log("Nombre cambiado de " + oldName + " a " + newName);
         _nameText.text = newName;
         _playerInfo.name = newName;
+        //CmdChangePublicName();
     }
 
     void OnServerNotification(ServerMessage message)
@@ -192,7 +196,8 @@ public class SetupPlayer : NetworkBehaviour
         Debug.Log("[CLIENT] Número de jugadores en el Lobby -> " + message.client_numberPlayers);
         SetNumberPlayer(message.client_numberPlayers);
     }
-    
+
+  
  
     private int numPlayers;
     public int GetCLientNumberPlayers()
@@ -210,7 +215,10 @@ public class SetupPlayer : NetworkBehaviour
     {
         int aux = _id + 1;
         if (newName.Length < 2 || newName.Length > 14)  _name = "Player " + aux;
-        else _name = newName;
+        else{ _name = newName;
+        _playerInfo.publicName = newName;
+
+        }
     }
 
     [Server]

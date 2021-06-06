@@ -260,7 +260,7 @@ public class UIManager : MonoBehaviour
                 break;
             
             }
-        positions.text += j + numberer + players[j-1].name + "                  "+ times[j-1] + "\n";
+        positions.text += j + numberer + players[j-1].publicName + "                  "+ times[j-1] + "\n";
         j++;
 
 

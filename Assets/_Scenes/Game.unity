@@ -419,11 +419,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   syncMode: 0
   syncInterval: 0.1
-  numPlayers: 0
-  _players: []
+  MaxLaps: 2
+  _playersInRace: []
+  _currentPositions: 
+  myCurrentPositions: 
   isActiveMovement: 0
-  _currentTime: 0
-  myCurrentTime: 0
   arePlayersReady: 0
 --- !u!4 &1839589614
 Transform:
@@ -1101,7 +1101,7 @@ PrefabInstance:
     - target: {fileID: 1182316016025318651, guid: 5c339809502a33749b546f6663bcfb75,
         type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3010251750485384644, guid: 5c339809502a33749b546f6663bcfb75,
         type: 3}
