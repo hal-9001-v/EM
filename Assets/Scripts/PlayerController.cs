@@ -80,7 +80,6 @@ public class PlayerController : NetworkBehaviour
     public delegate void OnSpeedChangeDelegate(float newVal);
 
     public event OnSpeedChangeDelegate OnSpeedChangeEvent;
-
     [SerializeField] public SyncList<double> lapTimes = new SyncList<double>();
 
     [SerializeField]
@@ -117,7 +116,7 @@ public class PlayerController : NetworkBehaviour
             m_UImanager = FindObjectOfType<UIManager>();
             _polePositionManager = FindObjectOfType<PolePositionManager>();
             _camera = FindObjectOfType<CameraController>();
-            CmdCheckPointCheck(_startCollider.name, _currentLapTime);
+            CmdCheckPointCheck(_startCollider.name, _currentLapTime, _polePositionManager);
 
             if (m_UImanager.playerIsViewer) mode = 1;
             else mode = 0;
@@ -478,14 +477,14 @@ public class PlayerController : NetworkBehaviour
 
 
     [Command]
-    public void CmdCheckPointCheck(string name, double currentLapTime)
+    public void CmdCheckPointCheck(string name, double currentLapTime, PolePositionManager pole)
     {
-        ServerCheckPointCheck(name, currentLapTime);
+        ServerCheckPointCheck(name, currentLapTime, pole);
     }
 
 
     [Server]
-    public void ServerCheckPointCheck(string name, double currentLapTime)
+    public void ServerCheckPointCheck(string name, double currentLapTime, PolePositionManager pole)
     {
         if (int.Parse(name) == _currentCheckPoint)
         {
@@ -500,10 +499,11 @@ public class PlayerController : NetworkBehaviour
                 _currentLap++;
                 ResetLapTime(currentLapTime);
 
-                if (_currentLap == _polePositionManager.MaxLaps)
+                if (_currentLap == pole.MaxLaps)
                 {
                     _currentLap = 0;
-                    _polePositionManager.EndRace();
+                    pole.EndRace();
+
                 }
                 Debug.Log("Current Lap = " + _currentLap);
             }
@@ -569,7 +569,7 @@ public class PlayerController : NetworkBehaviour
             string s = other.name;
             if (isLocalPlayer)
             {
-                CmdCheckPointCheck(s, myLapTime);
+                CmdCheckPointCheck(s, myLapTime, _polePositionManager);
             }
         }
     }
