@@ -1,15 +1,10 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using Mirror;
+﻿using Mirror;
 using UnityEngine;
 
 public class MyNetworkManager : NetworkManager
 {
     private UIManager UI;
     private SetupPlayer player;
-
-
-
 
     #region Client
 

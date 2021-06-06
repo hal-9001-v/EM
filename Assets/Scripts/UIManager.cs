@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using Mirror;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using UnityEngine.InputSystem;
 
 public class UIManager : MonoBehaviour
 {
@@ -16,7 +14,6 @@ public class UIManager : MonoBehaviour
 
     private Timer _timer;
     private double startingTime;
-
 
     #region GUIBUTTONS
 
@@ -57,6 +54,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI textTotalTime;
     [SerializeField] private TextMeshProUGUI textLapTime;
 
+
     [Header("Pause Menu")] [SerializeField]
     private GameObject pauseHUD;
 
@@ -68,15 +66,18 @@ public class UIManager : MonoBehaviour
     [Header("Wrong Way Warning")] [SerializeField]
     private GameObject warning;
 
+
     [Header("CountDown")] [SerializeField] private GameObject countDown;
     [SerializeField] private TextMeshProUGUI numbersInCountDown;
 
     public bool playerIsViewer;
 
+
     [Header("Chat")] [SerializeField] private GameObject chatObject;
     [SerializeField] private TextMeshProUGUI chat;
     [SerializeField] private TMP_InputField chatInput;
     [SerializeField] private GameObject chatBox;
+
 
     [Header("ScoreGUI")] [SerializeField] private GameObject endRaceHUD;
     [SerializeField] private TextMeshProUGUI positions;
@@ -204,7 +205,7 @@ public class UIManager : MonoBehaviour
 
     public void UpdateTotalTime(double time)
     {
-        textTotalTime.text = FormatTime(time, "Total",true);
+        textTotalTime.text = FormatTime(time, "Total", true);
     }
 
     public void UpdateLapTime(double time)
@@ -220,55 +221,55 @@ public class UIManager : MonoBehaviour
         double fraction = time * 1000;
         fraction = (fraction % 1000);
         string timeText;
-        if(b) timeText = String.Format(s + " Time: {0:00}:{1:00}:{2:000}", minutes, seconds, fraction);
-        else  timeText = String.Format("Time: {0:00}:{1:00}:{2:000}", minutes, seconds, fraction);
+        if (b) timeText = String.Format(s + " Time: {0:00}:{1:00}:{2:000}", minutes, seconds, fraction);
+        else timeText = String.Format("Time: {0:00}:{1:00}:{2:000}", minutes, seconds, fraction);
 
         return timeText;
     }
 
-    public void UpdateEndResult(List <PlayerInfo> players, SyncList<double> timeList ){
-    
+    public void UpdateEndResult(List<PlayerInfo> players, SyncList<double> timeList)
+    {
         positions.text = "";
         string[] times = new string[timeList.Count];
 
-        for(int i = 0; i < timeList.Count; i++){
-
+        for (int i = 0; i < timeList.Count; i++)
+        {
             times[i] = FormatTime(timeList[i], null, false);
-
         }
-        
+
         string numberer;
-        
+
         int j = 0;
 
-        foreach(PlayerInfo p in players){
-            switch(j){
+        foreach (PlayerInfo p in players)
+        {
+            switch (j)
+            {
+                case 0:
+                    numberer = "st";
+                    break;
 
-                case 0: numberer = "st";
-                break;
-            
-                case 1: numberer = "nd";
-                break;
-            
-                case 2: numberer = "rd";
-                break;
-            
-                case 3: numberer = "th";
-                break;
+                case 1:
+                    numberer = "nd";
+                    break;
 
-                default: numberer = "th";
-                break;
-            
+                case 2:
+                    numberer = "rd";
+                    break;
+
+                case 3:
+                    numberer = "th";
+                    break;
+
+                default:
+                    numberer = "th";
+                    break;
             }
 
             int aux = j + 1;
-            positions.text += aux + numberer + players[j].publicName + "                  "+ times[j] + "\n";
+            positions.text += aux + numberer + players[j].publicName + "                  " + times[j] + "\n";
             j++;
-
-
         }
-
-
     }
 
     [ContextMenu("Hago cosas de tiempo")]
@@ -282,14 +283,14 @@ public class UIManager : MonoBehaviour
     [ContextMenu("Pruebo Interfaz Resultados")]
     public void TestFinalHud()
     {
-        List <PlayerInfo> players = _manager._playersInRace;
+        List<PlayerInfo> players = _manager._playersInRace;
         SyncList<double> timeList = new SyncList<double>();
-        for (int i = 0; i < 4; i++){
-            
+        for (int i = 0; i < 4; i++)
+        {
             timeList.Add(UnityEngine.Random.Range(0f, 500f));
-
         }
-        UpdateEndResult(players,timeList);
+
+        UpdateEndResult(players, timeList);
     }
 
 
@@ -323,7 +324,6 @@ public class UIManager : MonoBehaviour
         inGameHUD.SetActive(false);
         countDown.SetActive(false);
         UpdateChat(true, false);
-
     }
 
     public void ActivatePlayMenu()
@@ -362,7 +362,8 @@ public class UIManager : MonoBehaviour
         chatBox.gameObject.SetActive(t);
     }
 
-    public void ActivateEndHud(){
+    public void ActivateEndHud()
+    {
         mainMenu.SetActive(false);
         inGameHUD.SetActive(false);
         playMenu.SetActive(false);
@@ -373,8 +374,7 @@ public class UIManager : MonoBehaviour
         endRaceHUD.SetActive(true);
         warning.SetActive((false));
     }
-    
-    
+
 
     private void Play()
     {
@@ -390,7 +390,6 @@ public class UIManager : MonoBehaviour
         NetworkClient.AddPlayer();
         //      myChangingPlayer.IsViewer = true;
         ActivateSpectateMenu();
-        
     }
 
     private void Train()

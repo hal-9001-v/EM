@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using Mirror;
 using UnityEngine;
 
-//public class PolePositionManager : NetworkBehaviour
 public class PolePositionManager : NetworkBehaviour
 {
+
+    #region Variables
+
     private const int MaxPlayers = 4;
 
     public int MaxLaps = 2;
@@ -16,11 +18,6 @@ public class PolePositionManager : NetworkBehaviour
 
     private List<PlayerInfo> _players = new List<PlayerInfo>();
     public List<PlayerInfo> _playersInRace = new List<PlayerInfo>();
-    private SyncList<PlayerInfo> _spectators = new SyncList<PlayerInfo>();
-    public  SyncList<double> _totalTimes = new SyncList<double>();
-
-    [SyncVar (hook = nameof(HandlePositionChange))] public string _currentPositions;
-    public string myCurrentPositions;
 
     private CircuitController _circuitController;
     private GameObject[] _debuggingSpheres;
@@ -29,15 +26,27 @@ public class PolePositionManager : NetworkBehaviour
 
     private Timer _timer;
 
+    private bool countDownStarted;
+
+    double threshHold;
+
     [SyncVar] private bool _isRaceInProgress;
 
     [SyncVar] public bool isActiveMovement = false;
 
     [SyncVar] public bool arePlayersReady;
 
-    private bool countDownStarted;
+    [SyncVar(hook = nameof(HandlePositionChange))]
+    public string _currentPositions;
 
-    double threshHold;
+    public string myCurrentPositions;
+
+    public SyncList<PlayerInfo> _spectators = new SyncList<PlayerInfo>();
+    public SyncList<double> _totalTimes = new SyncList<double>();
+
+    #endregion
+
+    #region Unity Callbacks
 
     private void Awake()
     {
@@ -57,8 +66,6 @@ public class PolePositionManager : NetworkBehaviour
 
     private void Update()
     {
-       
-
         if (isServer)
         {
             if (_isRaceInProgress)
@@ -67,73 +74,29 @@ public class PolePositionManager : NetworkBehaviour
                 _uiManager.UpdateRaceRank(raceProgress);
                 RpcUpdateRaceProgress(raceProgress);
             }
-            else { 
-            ArePlayersReady();}
+            else
+            {
+                ArePlayersReady();
+            }
         }
+
         UpdateGui();
-        
+
         if (isLocalPlayer)
         {
-            
             _uiManager.UpdateRaceRank(myCurrentPositions);
-                
-        
         }
     }
 
-    private void HandlePositionChange(string oldString, string newString){
+    #endregion
 
-        myCurrentPositions = newString;
+    #region Server
 
-    }
-
-    
     [Server]
-    public void ServerSetRaceProgress(string s){
-
+    public void ServerSetRaceProgress(string s)
+    {
         _currentPositions = s;
         RpcUpdateRaceProgress(s);
-
-    }
-    
-    [ClientRpc]
-    void RpcUpdateRaceProgress(string raceProgress)
-    {
-        _uiManager.UpdateRaceRank(raceProgress);
-    }
-
-
-    public void AddPlayer(PlayerInfo player)
-    {
-        _players.Add(player);
-    }
-
-
-    public int GetPlayerCount()
-    {
-        return _players.Count;
-    }
-
-    public void RemovePlayer(PlayerInfo player)
-    {
-        _players.Remove(player);
-    }
-
-    private class PlayerInfoComparer : Comparer<PlayerInfo>
-    {
-        float[] _arcLengths;
-
-        public PlayerInfoComparer(float[] arcLengths)
-        {
-            _arcLengths = arcLengths;
-        }
-
-        public override int Compare(PlayerInfo x, PlayerInfo y)
-        {
-            if (_arcLengths[x.ID] < _arcLengths[y.ID])
-                return 1;
-            else return -1;
-        }
     }
 
     [Server]
@@ -141,7 +104,6 @@ public class PolePositionManager : NetworkBehaviour
     {
         // Update car arc-lengths
         float[] arcLengths = new float[MaxPlayers];
-
 
 
         for (int i = 0; i < racePlayers.Count; ++i)
@@ -173,10 +135,126 @@ public class PolePositionManager : NetworkBehaviour
                 raceOrder += player.publicName + " ";
             }
         }
-        
+
         Debug.Log("RaceOrder " + raceOrder);
         ServerSetRaceProgress(raceOrder);
         return raceOrder;
+    }
+
+    [Server]
+    private void ArePlayersReady()
+    {
+        int count = 0;
+        for (int i = 0; i < _playersInRace.Count; i++)
+        {
+            if (_playersInRace[i].IsReady) count++;
+        }
+
+        if (count > _playersInRace.Count / 2 && _playersInRace.Count >= MinimumNamberOfPlayers)
+        {
+            _isRaceInProgress = true;
+
+            foreach (var player in _playersInRace)
+            {
+                _spectators.Add(player);
+            }
+
+            RpcStarCountDownUI();
+
+            StartCoroutine(CountDown2());
+        }
+    }
+
+    [Server]
+    public void EndRace()
+    {
+        _isRaceInProgress = false;
+
+
+        isActiveMovement = false;
+        RpcEndRace();
+        for (int i = 0; i < _players.Count; i++)
+        {
+            _players[i].OnDestroy();
+        }
+
+
+        _players.Clear();
+        _playersInRace.Clear();
+        _spectators.Clear();
+    }
+
+    [Server]
+    public void GetTimes(List<PlayerInfo> p)
+    {
+        foreach (PlayerInfo player in p)
+        {
+            _totalTimes.Add(player.totalTIme);
+        }
+    }
+
+    #endregion
+
+    #region RPCs
+
+    [ClientRpc]
+    void RpcUpdateRaceProgress(string raceProgress)
+    {
+        _uiManager.UpdateRaceRank(raceProgress);
+    }
+
+    [ClientRpc]
+    public void RpcEndRace()
+    {
+        _uiManager.ActivateEndHud();
+
+        for (int i = 0; i < _players.Count; i++)
+        {
+            _players[i].OnDestroy();
+        }
+
+        StartCoroutine(RankingCountDown());
+
+        _players.Clear();
+        _playersInRace.Clear();
+    }
+
+    [ClientRpc]
+    public void RpcStarCountDownUI()
+    {
+        _uiManager.ActivateCountDown();
+        StartCoroutine(CountDown());
+    }
+
+    [ClientRpc]
+    private void RpcSetMovementToPlayers()
+    {
+        for (int i = 0; i < _playersInRace.Count; i++)
+        {
+            _playersInRace[i].CanMove = isActiveMovement;
+        }
+
+        _uiManager.myChangingPlayer.gameObject.GetComponent<PlayerController>()
+            .CmdSetRaceStartTime(_timer.GetCurrentServerTime());
+    }
+
+    #endregion
+
+    #region Ohter Methods
+
+    public int GetPlayerCount()
+    {
+        return _players.Count;
+    }
+
+    public void AddPlayer(PlayerInfo player)
+    {
+        _players.Add(player);
+    }
+
+    public void RemovePlayer(PlayerInfo player)
+    {
+        _players.Remove(player);
     }
 
     float ComputeCarArcLength(int id)
@@ -206,11 +284,48 @@ public class PolePositionManager : NetworkBehaviour
         return minArcL;
     }
 
-    [ClientRpc]
-    public void RpcStarCountDownUI()
+    private void SetMovementToPlayers()
     {
-        _uiManager.ActivateCountDown();
-        StartCoroutine(CountDown());
+        RpcSetMovementToPlayers();
+        for (int i = 0; i < _playersInRace.Count; i++)
+        {
+            _playersInRace[i].CanMove = isActiveMovement;
+        }
+    }
+
+    public void UpdateGui()
+    {
+        GetTimes(_playersInRace);
+        _uiManager.UpdateEndResult(_playersInRace, _totalTimes);
+    }
+
+    private void HandlePositionChange(string oldString, string newString)
+    {
+        myCurrentPositions = newString;
+    }
+
+    private class PlayerInfoComparer : Comparer<PlayerInfo>
+    {
+        float[] _arcLengths;
+
+        public PlayerInfoComparer(float[] arcLengths)
+        {
+            _arcLengths = arcLengths;
+        }
+
+        public override int Compare(PlayerInfo x, PlayerInfo y)
+        {
+            if (_arcLengths[x.ID] < _arcLengths[y.ID])
+                return 1;
+            else return -1;
+        }
+    }
+
+    private IEnumerator RankingCountDown()
+    {
+        yield return new WaitForSeconds(7f);
+
+        _uiManager.ActivatePlayMenu();
     }
 
     private IEnumerator CountDown()
@@ -227,24 +342,6 @@ public class PolePositionManager : NetworkBehaviour
         _uiManager.ActivateInGameHUD();
     }
 
-    [Server]
-    private void ArePlayersReady()
-    {
-        int count = 0;
-        for (int i = 0; i < _playersInRace.Count; i++)
-        {
-            if (_playersInRace[i].IsReady) count++;
-        }
-
-        if (count > _playersInRace.Count / 2 && _playersInRace.Count >= MinimumNamberOfPlayers)
-        {
-            _isRaceInProgress = true;
-            RpcStarCountDownUI();
-
-            StartCoroutine(CountDown2());
-        }
-    }
-
     private IEnumerator CountDown2()
     {
         yield return new WaitForSeconds(5f);
@@ -252,89 +349,5 @@ public class PolePositionManager : NetworkBehaviour
         SetMovementToPlayers();
     }
 
-    private void SetMovementToPlayers()
-    {
-        RpcSetMovementToPlayers();
-        for (int i = 0; i < _playersInRace.Count; i++)
-        {
-            _playersInRace[i].CanMove = isActiveMovement;
-        }
-    }
-
-    [ClientRpc]
-    private void RpcSetMovementToPlayers()
-    {
-        for (int i = 0; i < _playersInRace.Count; i++)
-        {
-            _playersInRace[i].CanMove = isActiveMovement;
-        }
-
-        _uiManager.myChangingPlayer.gameObject.GetComponent<PlayerController>()
-            .CmdSetRaceStartTime(_timer.GetCurrentServerTime());
-    }
-
-    public void UpdateGui()
-    {
- 
-            GetTimes(_playersInRace);
-            _uiManager.UpdateEndResult(_playersInRace, _totalTimes);
-
-    }
-
-    [Server]
-    public void EndRace()
-    {
-        _isRaceInProgress = false;
-
-
-        isActiveMovement = false;
-        RpcEndRace();
-        for (int i = 0; i < _players.Count; i++)
-        {
-            _players[i].OnDestroy();
-        }
-
-        
-        _players.Clear();
-        _playersInRace.Clear();
-        _spectators.Clear();
-    }
-
-    [ClientRpc]
-    public void RpcEndRace()
-    {   
-        
-        _uiManager.ActivateEndHud();
-
-        for (int i = 0; i < _players.Count; i++)
-        {
-            _players[i].OnDestroy();
-        }
-
-        StartCoroutine(RankingCountDown());
-
-        _players.Clear();
-        _playersInRace.Clear();
-        
-        
-    }
-    
-    [Server]
-    public void GetTimes(List<PlayerInfo> p)
-    {
-        foreach (PlayerInfo player  in p)
-        {
-            
-            _totalTimes.Add(player.totalTIme);
-        }
-        
-        
-    }
-
-    private IEnumerator RankingCountDown()
-    {
-        yield return new WaitForSeconds(7f);
-        
-        _uiManager.ActivatePlayMenu();
-    }
+    #endregion
 }

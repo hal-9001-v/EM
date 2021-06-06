@@ -1,15 +1,11 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using Mirror;
+﻿using UnityEngine;
+
 public class CircuitController : MonoBehaviour
 {
     private LineRenderer _circuitPath;
     private Vector3[] _pathPos;
     private float[] _cumArcLength;
     private float _totalLength;
-
-    
 
     public float CircuitLength
     {
@@ -72,7 +68,6 @@ public class CircuitController : MonoBehaviour
         }
 
         return colliders;
-
 
     }
 

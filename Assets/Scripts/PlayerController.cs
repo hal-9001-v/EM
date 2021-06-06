@@ -12,27 +12,6 @@ using UnityEngine.InputSystem;
 
 public class PlayerController : NetworkBehaviour
 {
-    private GameObject _startCollider;
-
-    [SyncVar(hook = nameof(HandleCurrentCheckPointCheck))]
-    private int _currentCheckPoint;
-
-    [SyncVar(hook = nameof(HandleCurrentLapCheck))]
-    private int _currentLap;
-
-    [SyncVar(hook = nameof(HandleWrongWayCheck))]
-    private bool _wrongWay;
-
-    [SyncVar(hook = nameof(HandleLastCheckpointTransform))]
-    private Vector3 _myFixPos;
-
-
-    Timer t;
-    private double teleportThreshhold = 5;
-    private double currentThreshhold = 0;
-    private bool isCounting = false;
-    private double startingThreshholdTime;
-
     #region Variables
 
     [Header("Movement")] public List<AxleInfo> axleInfos;
@@ -48,7 +27,6 @@ public class PlayerController : NetworkBehaviour
     private float _inputAcceleration { get; set; }
     private float _inputSteering { get; set; }
     private bool _inputBrake { get; set; }
-
 
     private PlayerInfo m_PlayerInfo;
     public UIManager m_UImanager;
@@ -82,18 +60,36 @@ public class PlayerController : NetworkBehaviour
     public event OnSpeedChangeDelegate OnSpeedChangeEvent;
     [SerializeField] public SyncList<double> lapTimes = new SyncList<double>();
 
-    [SerializeField]
-    [SyncVar(hook = nameof(HandlerLapTimerUpdate))]
+    private double myTotalTime;
+    private double myLapTime;
+
+    private GameObject _startCollider;
+
+    Timer t;
+    private double teleportThreshhold = 5;
+    private double currentThreshhold = 0;
+    private bool isCounting = false;
+    private double startingThreshholdTime;
+
+    [SyncVar(hook = nameof(HandleCurrentCheckPointCheck))]
+    private int _currentCheckPoint;
+
+    [SyncVar(hook = nameof(HandleCurrentLapCheck))]
+    private int _currentLap;
+
+    [SyncVar(hook = nameof(HandleWrongWayCheck))]
+    private bool _wrongWay;
+
+    [SyncVar(hook = nameof(HandleLastCheckpointTransform))]
+    private Vector3 _myFixPos;
+
+    [SerializeField] [SyncVar(hook = nameof(HandlerLapTimerUpdate))]
     private double _currentLapTime;
 
-    [SerializeField]
-    [SyncVar(hook = nameof(HandlertotalTimerUpdate))]
+    [SerializeField] [SyncVar(hook = nameof(HandlertotalTimerUpdate))]
     private double _totalTime;
 
     [SyncVar] [SerializeField] private double _startingRaceTime;
-
-    private double myTotalTime;
-    private double myLapTime;
 
     #endregion Variables
 
@@ -107,7 +103,6 @@ public class PlayerController : NetworkBehaviour
         t = FindObjectOfType<Timer>();
         _startCollider = GameObject.Find("0");
     }
-
 
     private void Start()
     {
@@ -142,15 +137,11 @@ public class PlayerController : NetworkBehaviour
 
         _input.PC.Brake.canceled += ctx => { _inputBrake = false; };
 
-        _input.PC.Camera.performed += ctx =>
-        {
-            DisplayNextCamera();
-        };
+        _input.PC.Camera.performed += ctx => { DisplayNextCamera(); };
 
 
         _input.Enable();
     }
-
 
     public void Update()
     {
@@ -163,6 +154,112 @@ public class PlayerController : NetworkBehaviour
         if (isLocalPlayer) CmdGetUiTotalTime();
         m_UImanager.UpdateLapTime(myLapTime);
         m_UImanager.UpdateTotalTime(myTotalTime);
+    }
+
+
+    [Client]
+    void ClientApplyMovement()
+    {
+        ApplyMovement(_inputSteering, _inputAcceleration, _inputBrake);
+    }
+
+
+    [ClientRpc]
+    void RpcPrepareForMode(int newMode)
+    {
+        switch (newMode)
+        {
+            case 0:
+
+                break;
+
+            case 1:
+                foreach (Collider c in GetComponentsInChildren<Collider>())
+                {
+                    c.enabled = false;
+                }
+
+                foreach (Renderer r in GetComponentsInChildren<Renderer>())
+                {
+                    r.enabled = false;
+                }
+
+                foreach (Canvas c in GetComponentsInChildren<Canvas>())
+                {
+                    c.enabled = false;
+                }
+
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    public void FixedUpdate()
+    {
+        CmdApplyMovement(_inputSteering, _inputAcceleration, _inputBrake);
+        //ClientApplyMovement();
+    }
+
+    #endregion
+
+    #region Command
+
+    [Command]
+    public void CmdCheckPointCheck(string name, double currentLapTime, PolePositionManager pole)
+    {
+        ServerCheckPointCheck(name, currentLapTime, pole);
+    }
+
+    [Command]
+    public void CmdPrepareForMode(int newMode)
+    {
+        RpcPrepareForMode(newMode);
+    }
+
+    [Command]
+    void CmdApplyMovement(float steering, float acceleration, bool brake)
+    {
+        if (!m_PlayerInfo.CanMove) return;
+        ApplyMovement(steering, acceleration, brake);
+        if (isServer)
+        {
+            //Debug.Log("Your current server time is " + t.GetCurrentServerTime() + " and the threshold is " + currentThreshhold + " and you are currently counting " + isCounting);
+            if ((m_Rigidbody.velocity.magnitude < 0.5)) CalculateTeleport();
+            else
+            {
+                isCounting = false;
+                currentThreshhold = t.GetCurrentServerTime() + teleportThreshhold;
+            }
+        }
+    }
+
+    #endregion
+
+    #region Server
+
+    [Server]
+    private void CalculateTeleport()
+    {
+        if (!isCounting)
+        {
+            isCounting = true;
+            startingThreshholdTime = t.GetCurrentServerTime();
+            currentThreshhold = startingThreshholdTime + teleportThreshhold;
+        }
+
+
+        if (t.GetCurrentServerTime() >= currentThreshhold)
+        {
+            int lookAux = GetNextCheckPoint();
+            int posAux = lookAux - 1;
+            GameObject temp = GameObject.Find(posAux.ToString());
+            GameObject look = GameObject.Find(lookAux.ToString());
+            Teleport(temp, look);
+            currentThreshhold = t.GetCurrentServerTime() + 30;
+            isCounting = false;
+        }
     }
 
     [Server]
@@ -221,124 +318,117 @@ public class PlayerController : NetworkBehaviour
         TractionControl();
     }
 
-    [Command]
-    void CmdApplyMovement(float steering, float acceleration, bool brake)
+    [Server]
+    public void ServerCheckPointCheck(string name, double currentLapTime, PolePositionManager pole)
     {
-        if (!m_PlayerInfo.CanMove) return;
-        ApplyMovement(steering, acceleration, brake);
-        if (isServer)
+        if (int.Parse(name) == _currentCheckPoint)
         {
-            //Debug.Log("Your current server time is " + t.GetCurrentServerTime() + " and the threshold is " + currentThreshhold + " and you are currently counting " + isCounting);
-            if ((m_Rigidbody.velocity.magnitude < 0.5)) CalculateTeleport();
-            else
+            Debug.Log("Current Collider = " + name);
+
+            if (_currentLap != 0) _wrongWay = false;
+
+            //Check if next collider is last collider 
+            if (_currentCheckPoint == GetEnd())
             {
-                isCounting = false;
-                currentThreshhold = t.GetCurrentServerTime() + teleportThreshhold;
+                //Update laps
+                _currentLap++;
+                m_PlayerInfo.currentLap++;
+                ResetLapTime(currentLapTime);
+
+                if (_currentLap == pole.MaxLaps)
+                {
+                    _currentLap = 0;
+                    m_PlayerInfo.currentLap = 0;
+                    pole.UpdateGui();
+                    pole.EndRace();
+                }
+
+                Debug.Log("Current Lap = " + _currentLap);
             }
+
+            //Get total chekpoints
+            LineRenderer _circuitPath = FindObjectOfType<LineRenderer>();
+            int num = CircuitController.GetColliderNumber(_circuitPath.positionCount);
+
+            //if next checkpoint is the last checkpoint, the next collider becomes first checkpoint
+            if (_currentCheckPoint == (num - 1))
+            {
+                _currentCheckPoint = 0;
+            } //Else nex checkpoint = currentcheckpooint++ 
+            else _currentCheckPoint = int.Parse(name) + 1;
+
+            Debug.Log("Next Collider = " + _currentCheckPoint);
         }
-    }
-
-    [Client]
-    void ClientApplyMovement()
-    {
-        ApplyMovement(_inputSteering, _inputAcceleration, _inputBrake);
-    }
-
-
-    [Command]
-    public void CmdPrepareForMode(int newMode)
-    {
-        RpcPrepareForMode(newMode);
-    }
-
-    [ClientRpc]
-    void RpcPrepareForMode(int newMode)
-    {
-        switch (newMode)
+        else
         {
-            case 0:
-
-                break;
-
-            case 1:
-                foreach (Collider c in GetComponentsInChildren<Collider>())
-                {
-                    c.enabled = false;
-                }
-
-                foreach (Renderer r in GetComponentsInChildren<Renderer>())
-                {
-                    r.enabled = false;
-                }
-
-                foreach (Canvas c in GetComponentsInChildren<Canvas>())
-                {
-                    c.enabled = false;
-                }
-
-                break;
-
-            default:
-                break;
+            if (_currentLap != 0 && _currentCheckPoint != 1) _wrongWay = true;
+            Debug.Log("Wrong Way!!!!");
         }
     }
 
-    public void FixedUpdate()
+    #endregion
+
+    #region Timer
+
+    [Server]
+    public void ResetLapTime(double lapTime)
     {
-        CmdApplyMovement(_inputSteering, _inputAcceleration, _inputBrake);
-        //ClientApplyMovement();
+        lapTimes.Add(lapTime);
+        _currentLapTime = 0;
     }
 
     [Server]
-    private void CalculateTeleport()
+    public void SetRaceStartTime(double startTime)
     {
-        if (!isCounting)
+        _startingRaceTime = startTime;
+    }
+
+    [Command]
+    public void CmdSetRaceStartTime(double startTime)
+    {
+        SetRaceStartTime(startTime);
+    }
+
+    [Command]
+    public void CmdGetUiTotalTime()
+    {
+        GetUiTotalTime();
+    }
+
+    [Command]
+    public void CmdServerUpdateLapTimer()
+    {
+        ServerUpdateLapTimer();
+    }
+
+    [Server]
+    public void ServerUpdateLapTimer()
+    {
+        _currentLapTime = t.GetCurrentServerTime() - _startingRaceTime - GetUpdatedTotalTime();
+    }
+
+    [Server]
+    public void GetUiTotalTime()
+    {
+        _totalTime = t.GetCurrentServerTime() - _startingRaceTime;
+        m_PlayerInfo.totalTIme = _totalTime;
+    }
+
+    public double GetUpdatedTotalTime()
+    {
+        double totalTime = 0;
+        foreach (double laptime in lapTimes)
         {
-            isCounting = true;
-            startingThreshholdTime = t.GetCurrentServerTime();
-            currentThreshhold = startingThreshholdTime + teleportThreshhold;
+            totalTime += laptime;
         }
 
-
-        if (t.GetCurrentServerTime() >= currentThreshhold)
-        {
-            int lookAux = GetNextCheckPoint();
-            int posAux = lookAux - 1;
-            GameObject temp = GameObject.Find(posAux.ToString());
-            GameObject look = GameObject.Find(lookAux.ToString());
-            Teleport(temp, look);
-            currentThreshhold = t.GetCurrentServerTime() + 30;
-            isCounting = false;
-        }
+        return totalTime;
     }
-
-
-    private void Teleport(GameObject temp, GameObject look)
-    {
-        gameObject.transform.position = temp.transform.position;
-        gameObject.transform.rotation = Quaternion.Euler(new Vector3(gameObject.transform.rotation.x, 0, gameObject.transform.rotation.z));
-        gameObject.transform.LookAt(look.transform);
-    }
-
-    private int GetNextCheckPoint()
-    {
-        return _currentCheckPoint;
-    }
-
-
-    #region Rpcs
 
     #endregion
 
-    #region Server
+    #region Methods and Handlers
 
-    #endregion
-
-    #endregion
-
-    #region Methods
-
-    // crude traction control that reduces the power to wheel if the car is wheel spinning too much
     private void TractionControl()
     {
         foreach (var axleInfo in axleInfos)
@@ -362,7 +452,6 @@ public class PlayerController : NetworkBehaviour
         }
     }
 
-    // this is used to add more grip in relation to speed
     private void AddDownForce()
     {
         foreach (var axleInfo in axleInfos)
@@ -379,8 +468,6 @@ public class PlayerController : NetworkBehaviour
             m_Rigidbody.velocity = topSpeed * m_Rigidbody.velocity.normalized;
     }
 
-    // finds the corresponding visual wheel
-    // correctly applies the transform
     public void ApplyLocalPositionToVisuals(WheelCollider col)
     {
         if (col.transform.childCount == 0)
@@ -422,131 +509,37 @@ public class PlayerController : NetworkBehaviour
         CurrentRotation = transform.eulerAngles.y;
     }
 
-    #endregion
-
     public int GetEnd()
     {
         return int.Parse(_startCollider.name);
     }
 
-
-    private void HandleCurrentCheckPointCheck(int oldCheckPoint, int newCheckPoint)
+    private int GetNextCheckPoint()
     {
-        Debug.Log("My player info checkpoint is " + m_PlayerInfo.NextCollider);
-        m_PlayerInfo.NextCollider = newCheckPoint;
+        return _currentCheckPoint;
     }
 
-    private void HandleCurrentLapCheck(int oldLap, int newLap)
+    private void Teleport(GameObject temp, GameObject look)
     {
-        Debug.Log("My player info current lap is " + m_PlayerInfo.CurrentLap);
-        m_PlayerInfo.CurrentLap = newLap;
+        gameObject.transform.position = temp.transform.position;
+        gameObject.transform.rotation =
+            Quaternion.Euler(new Vector3(gameObject.transform.rotation.x, 0, gameObject.transform.rotation.z));
+        gameObject.transform.LookAt(look.transform);
     }
-
-    private void HandlerLapTimerUpdate(double oldDouble, double newDouble)
-    {
-
-
-        myLapTime = newDouble;
-        if (oldDouble < newDouble)
-        {
-            m_PlayerInfo.LapTime = newDouble;
-        }
-
-    }
-
-    private void HandlertotalTimerUpdate(double oldDouble, double newDouble)
-    {
-        myTotalTime = newDouble;
-
-        m_PlayerInfo.TotalTime = newDouble;
-    }
-
-
-
-    private void HandleWrongWayCheck(bool oldBool, bool newBool)
-    {
-        Debug.Log("Wrong Way!");
-        m_PlayerInfo.WrongWay = newBool;
-    }
-
-    private void HandleLastCheckpointTransform(Vector3 oldPos, Vector3 newPos)
-    {
-        Debug.Log("Position Reset!");
-    }
-
-
-
-    [Command]
-    public void CmdCheckPointCheck(string name, double currentLapTime, PolePositionManager pole)
-    {
-        ServerCheckPointCheck(name, currentLapTime, pole);
-    }
-
-
-    [Server]
-    public void ServerCheckPointCheck(string name, double currentLapTime, PolePositionManager pole)
-    {
-        if (int.Parse(name) == _currentCheckPoint)
-        {
-            Debug.Log("Current Collider = " + name);
-
-            if (_currentLap != 0) _wrongWay = false;
-
-            //Check if next collider is last collider 
-            if (_currentCheckPoint == GetEnd())
-            {
-                //Update laps
-                _currentLap++;
-                m_PlayerInfo.currentLap ++;
-                ResetLapTime(currentLapTime);
-
-                if (_currentLap == pole.MaxLaps)
-                {
-                    _currentLap = 0;
-                    m_PlayerInfo.currentLap = 0;
-                    pole.UpdateGui();
-                    pole.EndRace();
-    
-                }
-                Debug.Log("Current Lap = " + _currentLap);
-            }
-
-            //Get total chekpoints
-            LineRenderer _circuitPath = FindObjectOfType<LineRenderer>();
-            int num = CircuitController.GetColliderNumber(_circuitPath.positionCount);
-
-            //if next checkpoint is the last checkpoint, the next collider becomes first checkpoint
-            if (_currentCheckPoint == (num - 1))
-            {
-                _currentCheckPoint = 0;
-            } //Else nex checkpoint = currentcheckpooint++ 
-            else _currentCheckPoint = int.Parse(name) + 1;
-
-            Debug.Log("Next Collider = " + _currentCheckPoint);
-        }
-        else
-        {
-            if (_currentLap != 0 && _currentCheckPoint != 1) _wrongWay = true;
-            Debug.Log("Wrong Way!!!!");
-        }
-    }
-    
-    
-
 
     void DisplayNextCamera()
     {
-        if (mode == 1 && _polePositionManager._playersInRace.Count != 0)
+        if (mode == 1 && _polePositionManager._spectators.Count != 0)
         {
             _currentCamera++;
 
-            if (_currentCamera >= _polePositionManager._playersInRace.Count)
+            if (_currentCamera >= _polePositionManager._spectators.Count)
             {
                 _currentCamera = 0;
             }
 
-            //_camera.m_Focus = _polePositionManager.PlayerTransforms[_currentCamera].gameObject;
-            FindObjectOfType<CameraController>().m_Focus = _polePositionManager._playersInRace[_currentCamera].transform;
+            FindObjectOfType<CameraController>().m_Focus =
+                _polePositionManager._spectators[_currentCamera].transform;
         }
     }
 
@@ -563,60 +556,43 @@ public class PlayerController : NetworkBehaviour
         }
     }
 
-    #region Timer
-
-    [Server]
-    public void ResetLapTime(double lapTime)
+    private void HandleCurrentCheckPointCheck(int oldCheckPoint, int newCheckPoint)
     {
-        lapTimes.Add(lapTime);
-        _currentLapTime = 0;
+        Debug.Log("My player info checkpoint is " + m_PlayerInfo.NextCollider);
+        m_PlayerInfo.NextCollider = newCheckPoint;
     }
 
-    [Server]
-    public void SetRaceStartTime(double startTime)
+    private void HandleCurrentLapCheck(int oldLap, int newLap)
     {
-        _startingRaceTime = startTime;
+        Debug.Log("My player info current lap is " + m_PlayerInfo.CurrentLap);
+        m_PlayerInfo.CurrentLap = newLap;
     }
 
-    [Command]
-    public void CmdSetRaceStartTime(double startTime)
+    private void HandlerLapTimerUpdate(double oldDouble, double newDouble)
     {
-        SetRaceStartTime(startTime);
-    }
-    [Command]
-    public void CmdGetUiTotalTime()
-    {
-        GetUiTotalTime();
-    }
-
-    [Command]
-    public void CmdServerUpdateLapTimer()
-    {
-        ServerUpdateLapTimer();
-    }
-
-    [Server]
-    public void ServerUpdateLapTimer()
-    {
-        _currentLapTime = t.GetCurrentServerTime() - _startingRaceTime - GetUpdatedTotalTime();
-    }
-
-    [Server]
-    public void GetUiTotalTime()
-    {
-        _totalTime = t.GetCurrentServerTime() - _startingRaceTime;
-        m_PlayerInfo.totalTIme = _totalTime;
-    }
-
-    public double GetUpdatedTotalTime()
-    {
-        double totalTime = 0;
-        foreach (double laptime in lapTimes)
+        myLapTime = newDouble;
+        if (oldDouble < newDouble)
         {
-            totalTime += laptime;
+            m_PlayerInfo.LapTime = newDouble;
         }
+    }
 
-        return totalTime;
+    private void HandlertotalTimerUpdate(double oldDouble, double newDouble)
+    {
+        myTotalTime = newDouble;
+
+        m_PlayerInfo.TotalTime = newDouble;
+    }
+
+    private void HandleWrongWayCheck(bool oldBool, bool newBool)
+    {
+        Debug.Log("Wrong Way!");
+        m_PlayerInfo.WrongWay = newBool;
+    }
+
+    private void HandleLastCheckpointTransform(Vector3 oldPos, Vector3 newPos)
+    {
+        Debug.Log("Position Reset!");
     }
 
     #endregion

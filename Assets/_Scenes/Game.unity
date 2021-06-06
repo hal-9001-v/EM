@@ -420,7 +420,7 @@ MonoBehaviour:
   syncMode: 0
   syncInterval: 0.1
   MaxLaps: 5
-  MinimumNamberOfPlayers: 1
+  MinimumNamberOfPlayers: 2
   _playersInRace: []
   _currentPositions: 
   myCurrentPositions: 
