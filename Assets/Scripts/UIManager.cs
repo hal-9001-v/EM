@@ -78,6 +78,9 @@ public class UIManager : MonoBehaviour
     [SerializeField] private TMP_InputField chatInput;
     [SerializeField] private GameObject chatBox;
 
+    [Header("ScoreGUI")] [SerializeField] private GameObject endRaceHUD;
+    [SerializeField] private TextMeshProUGUI positions;
+
     #endregion
 
     [HideInInspector] public SetupPlayer myChangingPlayer;
@@ -215,35 +218,92 @@ public class UIManager : MonoBehaviour
 
     public void UpdateTotalTime(double time)
     {
-        textTotalTime.text = FormatTime(time, "Total");
+        textTotalTime.text = FormatTime(time, "Total",true);
     }
 
     public void UpdateLapTime(double time)
     {
-        textLapTime.text = FormatTime(time, "Lap");
+        textLapTime.text = FormatTime(time, "Lap", true);
     }
 
-    private string FormatTime(double time, string s)
+    private string FormatTime(double time, string s, bool b)
     {
         int intTime = (int) time;
         int minutes = intTime / 60;
         int seconds = intTime % 60;
         double fraction = time * 1000;
         fraction = (fraction % 1000);
-
-        string timeText = String.Format(s + " Time: {0:00}:{1:00}:{2:000}", minutes, seconds, fraction);
+        string timeText;
+        if(b) timeText = String.Format(s + " Time: {0:00}:{1:00}:{2:000}", minutes, seconds, fraction);
+        else  timeText = String.Format("Time: {0:00}:{1:00}:{2:000}", minutes, seconds, fraction);
 
         return timeText;
     }
 
+    public void UpdateEndResult(List <PlayerInfo> players, SyncList<double> timeList ){
+
+        positions.text = "";
+        string[] times = new string[timeList.Count];
+
+        for(int i = 0; i < timeList.Count; i++){
+
+            times[i] = FormatTime(timeList[i], null, false);
+
+        }
+        
+        string numberer;
+        
+        int j = 1;
+
+        foreach(PlayerInfo p in players){
+            switch(j){
+
+                case 1: numberer = "st";
+                break;
+            
+                case 2: numberer = "nd";
+                break;
+            
+                case 3: numberer = "rd";
+                break;
+            
+                case 4: numberer = "th";
+                break;
+
+                default: numberer = "th";
+                break;
+            
+            }
+        positions.text += j + numberer + players[j-1].name + "                  "+ times[j-1] + "\n";
+        j++;
+
+
+        }
+
+
+    }
 
     [ContextMenu("Hago cosas de tiempo")]
     public void TestTimeFormat()
     {
-        String s = FormatTime(495.244, "p");
+        String s = FormatTime(495.244, "p", true);
         Debug.Log("Time: 00:00:000");
         Debug.Log(s);
     }
+
+    [ContextMenu("Pruebo Interfaz Resultados")]
+    public void TestFinalHud()
+    {
+        List <PlayerInfo> players = _manager._players;
+        SyncList<double> timeList = new SyncList<double>();
+        for (int i = 0; i < 4; i++){
+            
+            timeList.Add(UnityEngine.Random.Range(0f, 500f));
+
+        }
+        UpdateEndResult(players,timeList);
+    }
+
 
     private void ActivateMainMenu()
     {
@@ -254,6 +314,7 @@ public class UIManager : MonoBehaviour
         countDown.SetActive(false);
         UpdateChat(false, false);
         pauseHUD.SetActive(false);
+        endRaceHUD.SetActive(false);
     }
 
     public void ActivateInGameHUD()
@@ -308,6 +369,14 @@ public class UIManager : MonoBehaviour
         chatInput.gameObject.SetActive(b);
         chat.gameObject.SetActive(t);
         chatBox.gameObject.SetActive(t);
+    }
+
+    public void ActivateEndHud(){
+
+        ActivateMainMenu();
+        mainMenu.SetActive(false);
+        endRaceHUD.SetActive(true);
+
     }
 
     private void Play()
