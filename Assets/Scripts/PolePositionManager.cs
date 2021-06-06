@@ -14,16 +14,22 @@ public class PolePositionManager : NetworkBehaviour
     public List<PlayerInfo> players = new List<PlayerInfo>();
 
 
+
     private CircuitController _circuitController;
     private GameObject[] _debuggingSpheres;
 
     private UIManager _uiManager;
 
     private Timer _timer;
+    [SerializeField]private double startingRaceTime;
+
+    [SerializeField] [SyncVar (hook = (nameof(HandleTimerUpdate)))] private double _currentTime;
+
+    [SerializeField]private double myCurrentTime;
+
 
     [SyncVar(hook = nameof(HandleIsRaceInProgress))]
     private bool isRaceInProgress = false;
-
     [SerializeField] private bool isClientRaceInProgress;
 
     [SyncVar(hook = nameof(HandleActiveMovement))]
@@ -56,12 +62,51 @@ public class PolePositionManager : NetworkBehaviour
             ActiveRace();
             StarCountDownUI();
         }
+        
+        if(isLocalPlayer) {
+            UIHandle();
+            CmdUpdateTimer();
+            ServerUpdateTimer();
+        }
 
         // _uiManager.UpdateRaceRank(GetRaceProgress());
 
     }
 
+    public void UIHandle(){
+        
+        CmdUpdateTimer();
 
+    }
+
+    private void HandleTimerUpdate(double oldDouble, double newDouble){
+
+        myCurrentTime = newDouble;
+        _uiManager.UpdateLapTime(newDouble);
+        _uiManager.UpdateTotalTime(newDouble);
+
+    }
+
+    [Command]
+    public void CmdUpdateTimer(){
+
+        ServerUpdateTimer();
+
+    }
+
+    [Server]
+    public void ServerUpdateTimer(){
+
+        _currentTime = _timer.GetCurrentServerTime() - startingRaceTime;
+        Debug.Log(_currentTime);
+
+    }
+
+    public double GetCurrentRaceTime(){
+
+        return _currentTime;
+
+    }
     public void AddPlayer(PlayerInfo player)
     {
 
@@ -186,6 +231,7 @@ public class PolePositionManager : NetworkBehaviour
     private void ActiveRace()
     {
         isRaceInProgress = true;
+        startingRaceTime = _timer.GetCurrentServerTime();
     }
 
     private void HandleIsRaceInProgress(bool oldActiveRace, bool newActiveRace)

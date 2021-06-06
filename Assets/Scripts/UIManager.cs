@@ -14,6 +14,8 @@ public class UIManager : MonoBehaviour
     private MyNetworkManager m_NetworkManager;
     [SerializeField] private PolePositionManager _manager;
 
+    private Timer _timer;
+    private double startingTime;
 
     #region GUIBUTTONS
 
@@ -51,6 +53,8 @@ public class UIManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI textSpeed;
     [SerializeField] private TextMeshProUGUI textLaps;
     [SerializeField] private TextMeshProUGUI textPosition;
+    [SerializeField] private TextMeshProUGUI textTotalTime;
+    [SerializeField] private TextMeshProUGUI textLapTime;
 
 
     [Header("Pause Menu")] [SerializeField]
@@ -63,7 +67,6 @@ public class UIManager : MonoBehaviour
 
     [Header("Wrong Way Warning")] [SerializeField]
     private GameObject warning;
-
 
     [Header("CountDown")] [SerializeField] private GameObject countDown;
     [SerializeField] private TextMeshProUGUI numbersInCountDown;
@@ -196,6 +199,7 @@ public class UIManager : MonoBehaviour
         numbersInCountDown.text = newText;
     }
 
+ HEAD
     public void UpdateChatLength()
     {
         int textLines = chat.textInfo.lineCount;
@@ -206,6 +210,45 @@ public class UIManager : MonoBehaviour
         {
             chat.text = string.Empty;
         }
+
+    public void UpdateTotalTime(double time){
+
+        textTotalTime.text = FormatTime(time);
+
+    }
+
+    public void UpdateLapTime(double time){
+
+        textLapTime.text = FormatTime(time);
+
+    }
+
+    public void ResetLapTime(){
+
+        textLapTime.text = "Time: 00:00:000";
+
+    }
+
+    private string FormatTime(double time){
+
+        int intTime = (int)time;
+        int minutes = intTime / 60;
+        int seconds = intTime % 60;
+        double fraction = time * 1000;
+        fraction = (fraction % 1000);
+        string timeText = String.Format ("Time: {0:00}:{1:00}:{2:000}", minutes, seconds, fraction);
+        return timeText;
+
+    }
+
+
+    [ContextMenu("Hago cosas de tiempo")]
+    public void TestTimeFormat(){
+
+        String s = FormatTime(495.244);
+        Debug.Log("Time: 00:00:000");
+        Debug.Log(s);
+
     }
 
     private void ActivateMainMenu()
@@ -299,7 +342,7 @@ public class UIManager : MonoBehaviour
         m_NetworkManager.StartHost();
         ActivatePlayMenu();
     }
-
+    
     private void StartClient()
     {
         m_NetworkManager.StartClient();
