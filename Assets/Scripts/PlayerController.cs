@@ -22,7 +22,7 @@ public class PlayerController : NetworkBehaviour
     [SyncVar(hook = nameof(HandleWrongWayCheck))]
     private bool _wrongWay;
 
-    [SyncVar(hook = nameof(HandleLastChekcpointTransform))]
+    [SyncVar(hook = nameof(HandleLastCheckpointTransform))]
     private Vector3 _myFixPos;
 
 
@@ -80,9 +80,20 @@ public class PlayerController : NetworkBehaviour
 
     public event OnSpeedChangeDelegate OnSpeedChangeEvent;
 
+    [SerializeField]  public SyncList<double> lapTimes = new SyncList<double>();
+
+    [SerializeField]
     [SyncVar(hook = nameof(HandlerLapTimerUpdate))]
-    public double _currentLapTime;
+    private double _currentLapTime;    
     
+    [SerializeField]
+    [SyncVar(hook = nameof(HandlertotalTimerUpdate))]
+    private double _totalTime;
+
+    [SyncVar] [SerializeField] private double _startingRaceTime;
+
+    private double myTotalTime;
+    private double myLapTime;
 
     #endregion Variables
 
@@ -105,7 +116,7 @@ public class PlayerController : NetworkBehaviour
             m_UImanager = FindObjectOfType<UIManager>();
             _polePositionManager = FindObjectOfType<PolePositionManager>();
             _camera = FindObjectOfType<CameraController>();
-            CmdCheckPointCheck(_startCollider.name, _polePositionManager);
+            CmdCheckPointCheck(_startCollider.name, _currentLapTime);
 
             if (m_UImanager.playerIsViewer) mode = 1;
             else mode = 0;
@@ -150,8 +161,11 @@ public class PlayerController : NetworkBehaviour
 
         m_UImanager.UpdateCurrentLap(_currentLap, 4);
         m_UImanager.UpdateWarning(_wrongWay);
-
-        ServerUpdateLapTimer();
+        
+        if(isLocalPlayer) CmdServerUpdateLapTimer();
+        if(isLocalPlayer) CmdGetUiTotalTime();
+        m_UImanager.UpdateLapTime(myLapTime);
+        m_UImanager.UpdateTotalTime(myTotalTime);
     }
 
     [Server]
@@ -434,14 +448,24 @@ public class PlayerController : NetworkBehaviour
 
     private void HandlerLapTimerUpdate(double oldDouble, double newDouble)
     {
-        m_UImanager.UpdateLapTime(newDouble);
+
+
+        myLapTime = newDouble;
         if (oldDouble < newDouble)
         {
             m_PlayerInfo.LapTime = newDouble;
         }
 
-        m_PlayerInfo.TotalTime += newDouble;
+    } 
+    
+    private void HandlertotalTimerUpdate(double oldDouble, double newDouble)
+    {
+        myTotalTime = newDouble;
+
+        m_PlayerInfo.TotalTime = newDouble;
     }
+
+    
 
     private void HandleWrongWayCheck(bool oldBool, bool newBool)
     {
@@ -449,21 +473,21 @@ public class PlayerController : NetworkBehaviour
         m_PlayerInfo.WrongWay = newBool;
     }
 
-    private void HandleLastChekcpointTransform(Vector3 oldPos, Vector3 newPos)
+    private void HandleLastCheckpointTransform(Vector3 oldPos, Vector3 newPos)
     {
         Debug.Log("Position Reset!");
     }
 
 
     [Command]
-    public void CmdCheckPointCheck(string name, PolePositionManager _polePositionManager)
+    public void CmdCheckPointCheck(string name, double currentLapTime)
     {
-        ServerCheckPointCheck(name, _polePositionManager);
+        ServerCheckPointCheck(name, currentLapTime);
     }
 
 
     [Server]
-    public void ServerCheckPointCheck(string name, PolePositionManager _polePositionManager)
+    public void ServerCheckPointCheck(string name, double currentLapTime)
     {
         if (int.Parse(name) == _currentCheckPoint)
         {
@@ -476,7 +500,7 @@ public class PlayerController : NetworkBehaviour
             {
                 //Update laps
                 _currentLap++;
-                ResetLapTime();
+                ResetLapTime(currentLapTime);
                 Debug.Log("Current Lap = " + _currentLap);
             }
 
@@ -541,21 +565,65 @@ public class PlayerController : NetworkBehaviour
             string s = other.name;
             if (isLocalPlayer)
             {
-                CmdCheckPointCheck(s, _polePositionManager);
+                CmdCheckPointCheck(s, myLapTime);
             }
         }
     }
 
+    #region Timer
+
     [Server]
-    public void ResetLapTime()
+    public void ResetLapTime(double lapTime)
     {
+        lapTimes.Add(lapTime);
         _currentLapTime = 0;
-        //_polePositionManager.lapStartingTime = t.GetCurrentServerTime();
+    }
+
+    [Server]
+    public void SetRaceStartTime(double startTime)
+    {
+        _startingRaceTime = startTime;
+    }
+
+    [Command]
+    public void CmdSetRaceStartTime(double startTime)
+    {
+        SetRaceStartTime(startTime);
+    }
+    [Command]
+    public void CmdGetUiTotalTime()
+    {
+         GetUiTotalTime();
+    }
+
+    [Command]
+    public void CmdServerUpdateLapTimer()
+    {
+        ServerUpdateLapTimer();
     }
 
     [Server]
     public void ServerUpdateLapTimer()
     {
-        //_currentLapTime = t.GetCurrentServerTime() - _polePositionManager.lapStartingTime;
+        _currentLapTime = t.GetCurrentServerTime() - _startingRaceTime - GetUpdatedTotalTime();
     }
+
+    [Server]
+    public void GetUiTotalTime()
+    {
+        _totalTime =  t.GetCurrentServerTime() - _startingRaceTime;
+    }
+
+    public double GetUpdatedTotalTime()
+    {
+        double totalTime = 0;
+        foreach (double laptime in lapTimes)
+        {
+            totalTime += laptime;
+        }
+
+        return totalTime;
+    }
+
+    #endregion
 }

@@ -22,18 +22,9 @@ public class PolePositionManager : NetworkBehaviour
 
     [SyncVar] public bool isActiveMovement = false;
 
-    [SyncVar(hook = nameof(HandleTimerUpdate))]
-    public double _currentTime;
-
-
-    public double myCurrentTime;
-
     [SyncVar] public bool arePlayersReady;
 
     private bool countDownStarted;
-
-    [SyncVar] public double startingTime;
-    [SyncVar] public double lapStartingTime;
 
     double threshHold;
 
@@ -61,27 +52,6 @@ public class PolePositionManager : NetworkBehaviour
         {
             ArePlayersReady();
         }
-
-        ServerUpdateTimer();
-    }
-
-    private void HandleTimerUpdate(double oldDouble, double newDouble)
-    {
-        myCurrentTime = newDouble;
-        _uiManager.UpdateTotalTime(newDouble);
-    }
-
-    [Server]
-    public void ServerUpdateTimer()
-    {
-        _currentTime = _timer.GetCurrentServerTime() - startingTime;
-        Debug.Log(_currentTime);
-    }
-
-
-    public double GetCurrentRaceTime()
-    {
-        return _currentTime;
     }
 
     public void AddPlayer(PlayerInfo player)
@@ -241,7 +211,7 @@ public class PolePositionManager : NetworkBehaviour
             _players[i].CanMove = isActiveMovement;
         }
 
-        startingTime = _timer.GetCurrentServerTime();
-        lapStartingTime = startingTime;
+        _uiManager.myChangingPlayer.gameObject.GetComponent<PlayerController>()
+            .CmdSetRaceStartTime(_timer.GetCurrentServerTime());
     }
 }
