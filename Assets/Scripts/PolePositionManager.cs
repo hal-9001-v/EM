@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Mirror;
 using UnityEngine;
 
-
+//public class PolePositionManager : NetworkBehaviour
 public class PolePositionManager : NetworkBehaviour
 {
     public int numPlayers;
@@ -11,9 +11,7 @@ public class PolePositionManager : NetworkBehaviour
     const int MaxPlayers = 4;
     private MyNetworkManager _networkManager;
 
-    public List<PlayerInfo> players = new List<PlayerInfo>();
-
-
+    private List<PlayerInfo> _players = new List<PlayerInfo>();
 
     private CircuitController _circuitController;
     private GameObject[] _debuggingSpheres;
@@ -21,21 +19,16 @@ public class PolePositionManager : NetworkBehaviour
     private UIManager _uiManager;
 
     private Timer _timer;
-    [SerializeField]private double startingRaceTime;
 
-    [SerializeField] [SyncVar (hook = (nameof(HandleTimerUpdate)))] private double _currentTime;
+    [SyncVar] private bool _isRaceInProgress;
 
-    [SerializeField]private double myCurrentTime;
+    [SyncVar] public bool isActiveMovement = false;
 
+    [SyncVar] public bool arePlayersReady;
 
-    [SyncVar(hook = nameof(HandleIsRaceInProgress))]
-    private bool isRaceInProgress = false;
-    [SerializeField] private bool isClientRaceInProgress;
-
-    [SyncVar(hook = nameof(HandleActiveMovement))]
-    public bool isActiveMovement = false;
-
-    [SerializeField] public bool isActiveClientMovement;
+    private bool countDownStarted;
+    private double startingTime;
+    double threshHold;
 
     private void Awake()
     {
@@ -53,82 +46,53 @@ public class PolePositionManager : NetworkBehaviour
         }
     }
 
-
     private void Update()
     {
+        _uiManager.UpdateRaceRank(GetRaceProgress());
 
-        if (!isClientRaceInProgress && ArePlayersReady() && players.Count >= 2)
+        if (!_isRaceInProgress && isServer)
         {
-            ActiveRace();
-            StarCountDownUI();
+            ArePlayersReady();
         }
-        
-        if(isLocalPlayer) {
-            UIHandle();
-            CmdUpdateTimer();
-            ServerUpdateTimer();
-        }
-
-        // _uiManager.UpdateRaceRank(GetRaceProgress());
-
     }
 
-    public void UIHandle(){
-        
-        CmdUpdateTimer();
-
-    }
-
-    private void HandleTimerUpdate(double oldDouble, double newDouble){
-
-        myCurrentTime = newDouble;
-        _uiManager.UpdateLapTime(newDouble);
-        _uiManager.UpdateTotalTime(newDouble);
-
-    }
-
-    [Command]
-    public void CmdUpdateTimer(){
-
-        ServerUpdateTimer();
-
-    }
-
-    [Server]
-    public void ServerUpdateTimer(){
-
-        _currentTime = _timer.GetCurrentServerTime() - startingRaceTime;
-        Debug.Log(_currentTime);
-
-    }
-
-    public double GetCurrentRaceTime(){
-
-        return _currentTime;
-
-    }
     public void AddPlayer(PlayerInfo player)
     {
-
-        if (players.Count < 4)
+        if (_players.Count < 4)
         {
-            players.Add(player);
-
+            _players.Add(player);
         }
         else
         {
             Debug.Log("CARRERA LLENA");
         }
-
     }
 
-
+    public int GetPlayerCount()
+    {
+        return _players.Count;
+    }
 
     public void RemovePlayer(PlayerInfo player)
     {
-        players.Remove(player);
-        //PlayerTransforms.Remove(player.transform);
+        _players.Remove(player);
+    }
 
+    private class PlayerInfoComparer : Comparer<PlayerInfo>
+    {
+        float[] _arcLengths;
+
+        public PlayerInfoComparer(float[] arcLengths)
+        {
+            _arcLengths = arcLengths;
+        }
+
+        public override int Compare(PlayerInfo x, PlayerInfo y)
+        {
+            if (_arcLengths[x.ID] < _arcLengths[y.ID])
+                return 1;
+            else return -1;
+        }
     }
 
     public string GetRaceProgress()
@@ -136,15 +100,19 @@ public class PolePositionManager : NetworkBehaviour
         // Update car arc-lengths
         float[] arcLengths = new float[MaxPlayers];
 
-        for (int i = 0; i < players.Count; i++)
-        {
-            players[i].CurrentArc = ComputeCarArcLength(i);
 
+        for (int i = 0; i < _players.Count; ++i)
+        {
+            if (_players[i] != null)
+            {
+                arcLengths[i] = ComputeCarArcLength(i);
+            }
         }
-        players.Sort((a, b) => b.CurrentArc.CompareTo(a.CurrentArc));
+
+        _players.Sort(new PlayerInfoComparer(arcLengths));
 
         string raceOrder = "";
-        foreach (var player in players)
+        foreach (var player in _players)
         {
             if (player != null)
             {
@@ -160,7 +128,7 @@ public class PolePositionManager : NetworkBehaviour
         // Compute the projection of the car position to the closest circuit 
         // path segment and accumulate the arc-length along of the car along
         // the circuit.
-        Vector3 carPos = this.players[id].transform.position;
+        Vector3 carPos = this._players[id].transform.position;
 
         int segIdx;
         float carDist;
@@ -169,84 +137,81 @@ public class PolePositionManager : NetworkBehaviour
             this._circuitController.ComputeClosestPointArcLength(carPos, out segIdx, out carProj, out carDist);
 
         this._debuggingSpheres[id].transform.position = carProj;
-
-
-        if (this.players[id].CurrentLap == 0)
+        if (this._players[id].CurrentLap == 0)
         {
             minArcL -= _circuitController.CircuitLength;
         }
         else
         {
             minArcL += _circuitController.CircuitLength *
-                       (players[id].CurrentLap - 1);
+                       (_players[id].CurrentLap - 1);
         }
 
         return minArcL;
     }
 
-    public void StarCountDownUI()
+    [ClientRpc]
+    public void RpcStarCountDownUI()
     {
         _uiManager.ActivateCountDown();
-
-        StartCoroutine(ChangeNumbersCountDown());
+        StartCoroutine(CountDown());
     }
 
-    IEnumerator ChangeNumbersCountDown()
+    private IEnumerator CountDown()
     {
-        yield return new WaitForSeconds(1);
-
+        yield return new WaitForSeconds(1f);
         _uiManager.UpdateTextCountDown("3");
-
-        yield return new WaitForSeconds(1);
-
+        yield return new WaitForSeconds(1f);
         _uiManager.UpdateTextCountDown("2");
-
-        yield return new WaitForSeconds(1);
-
+        yield return new WaitForSeconds(1f);
         _uiManager.UpdateTextCountDown("1");
-
-        yield return new WaitForSeconds(1);
-
+        yield return new WaitForSeconds(1f);
         _uiManager.UpdateTextCountDown("GO");
-
-        ActiveMovement();
+        yield return new WaitForSeconds(1f);
         _uiManager.ActivateInGameHUD();
     }
 
     [Server]
-    private bool ArePlayersReady()
+    private void ArePlayersReady()
     {
         int count = 0;
-        for (int i = 0; i < players.Count; i++)
+        for (int i = 0; i < _players.Count; i++)
         {
-            Debug.Log(players[i].IsReady);
-            if (players[i].IsReady) count++;
+            if (_players[i].IsReady) count++;
         }
 
-        if (count > players.Count / 2) return true;
-        else return false;
+        if (count > _players.Count / 2 && _players.Count >= 2)
+        {
+            _isRaceInProgress = true;
+            RpcStarCountDownUI();
+
+            StartCoroutine(CountDown2());
+        }
     }
 
-    [Server]
-    private void ActiveRace()
+    private IEnumerator CountDown2()
     {
-        isRaceInProgress = true;
-        startingRaceTime = _timer.GetCurrentServerTime();
-    }
-
-    private void HandleIsRaceInProgress(bool oldActiveRace, bool newActiveRace)
-    {
-        isClientRaceInProgress = newActiveRace;
-    }
-
-    [Server]
-    private void ActiveMovement()
-    {
+        yield return new WaitForSeconds(3f);
         isActiveMovement = true;
+        SetMovementToPlayers();
     }
 
-    private void HandleActiveMovement(bool oldActiveMovement, bool newActiveMovement)
+    private void SetMovementToPlayers()
     {
-        isActiveClientMovement = newActiveMovement;
+        RpcSetMovementToPlayers();
+        for (int i = 0; i < _players.Count; i++)
+        {
+            _players[i].CanMove = isActiveMovement;
+        }
     }
+
+    [ClientRpc]
+    private void RpcSetMovementToPlayers()
+    {
+        for (int i = 0; i < _players.Count; i++)
+        {
+            _players[i].CanMove = isActiveMovement;
+        }
+    }
+    
 }

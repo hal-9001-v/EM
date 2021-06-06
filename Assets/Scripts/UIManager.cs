@@ -16,6 +16,11 @@ public class UIManager : MonoBehaviour
 
     private Timer _timer;
     private double startingTime;
+    [HideInInspector] public SetupPlayer myChangingPlayer;
+
+    [Header("CountDown")] [SerializeField] private GameObject countDown;
+
+    [SerializeField] private TextMeshProUGUI numbersInCountDown;
 
     #region GUIBUTTONS
 
@@ -81,6 +86,7 @@ public class UIManager : MonoBehaviour
     #endregion
 
     [HideInInspector] public SetupPlayer myChangingPlayer;
+    
 
     private void Awake()
     {
@@ -143,6 +149,7 @@ public class UIManager : MonoBehaviour
     {
         NetworkManager.singleton.StopClient();
         NetworkManager.singleton.StopHost();
+        ActivateMainMenu();
     }
 
     private void Quit()
@@ -160,7 +167,7 @@ public class UIManager : MonoBehaviour
 
     private void Ready()
     {
-        myChangingPlayer.CmdSetReday();
+        myChangingPlayer.CmdSetReady();
         readyText.text = "Yes";
         ready.gameObject.GetComponent<Image>().color = Color.green;
         if (myChangingPlayer != null)
@@ -259,6 +266,7 @@ public class UIManager : MonoBehaviour
         personalizationMenu.SetActive(false);
         countDown.SetActive(false);
         UpdateChat(false, false);
+        pauseHUD.SetActive(false);
     }
 
     public void ActivateInGameHUD()
@@ -320,8 +328,10 @@ public class UIManager : MonoBehaviour
     {
         NetworkClient.AddPlayer();
         //        myChangingPlayer.IsViewer = false;
-        playerIsViewer = false;
+        playerIsViewer = false; 
+        NetworkClient.AddPlayer();
         ActivatePersonalizationMenu();
+
     }
 
     private void Spectate()

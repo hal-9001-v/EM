@@ -21,8 +21,6 @@ public class SetupPlayer : NetworkBehaviour
 
     [SyncVar(hook = nameof(HandleDisplayColorUpdated))]
     private Color _carColor;
-    
-    [SyncVar(hook = nameof(HandleSetReadyUpdated))] [SerializeField] private bool _ready;
 
     private UIManager _uiManager;
     private MyNetworkManager _networkManager;
@@ -48,6 +46,7 @@ public class SetupPlayer : NetworkBehaviour
     {
         base.OnStartServer();        
         _id = NetworkServer.connections.Count - 1;
+        _polePositionManager.AddPlayer(_playerInfo);
     }
 
     /// <summary>
@@ -156,16 +155,23 @@ public class SetupPlayer : NetworkBehaviour
         _nameText.text = newName;
         _playerInfo.name = newName;
     }
-    void HandleSetReadyUpdated(bool oldReady, bool newReady)
-    {
-        _ready = newReady;
-        _playerInfo.IsReady = newReady;
-    }
-
 
     void OnServerNotification(ServerMessage message)
     {
         Debug.Log("[CLIENT] Número de jugadores en el Lobby -> " + message.client_numberPlayers);
+        SetNumberPlayer(message.client_numberPlayers);
+    }
+    
+ 
+    private int numPlayers;
+    public int GetCLientNumberPlayers()
+    {
+        return numPlayers;
+    }
+
+    void SetNumberPlayer(int i)
+    {
+        numPlayers = i;
     }
 
     [Server]
@@ -205,19 +211,19 @@ public class SetupPlayer : NetworkBehaviour
     }
 
     [Command]
-    public void CmdSetReday()
+    public void CmdSetReady()
     {
-        _ready = true;
+        SetReady();
+        _playerInfo.IsReady = true;
+    }
+    
+    [Server]
+    public void SetReady()
+    {
         _playerInfo.IsReady = true;
     }
 
-    [ClientRpc]
-    public void RpcActivateMovement()
-    {
-        _playerInfo.CanMove = true;
-    }
-    
-    
+
 
     #endregion
 
