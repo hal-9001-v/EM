@@ -22,12 +22,6 @@ public class PolePositionManager : NetworkBehaviour
 
     [SyncVar] public bool isActiveMovement = false;
 
-    [SyncVar(hook = nameof(HandleTimerUpdate))]
-    public double _currentTime;
-
-
-    public double myCurrentTime;
-
     [SyncVar] public bool arePlayersReady;
 
     private bool countDownStarted;
@@ -70,28 +64,6 @@ public class PolePositionManager : NetworkBehaviour
                 ArePlayersReady();
             }
         }
-
-
-        ServerUpdateTimer();
-    }
-
-    private void HandleTimerUpdate(double oldDouble, double newDouble)
-    {
-        myCurrentTime = newDouble;
-        _uiManager.UpdateTotalTime(newDouble);
-    }
-
-    [Server]
-    public void ServerUpdateTimer()
-    {
-        _currentTime = _timer.GetCurrentServerTime() - startingTime;
-        Debug.Log(_currentTime);
-    }
-
-
-    public double GetCurrentRaceTime()
-    {
-        return _currentTime;
     }
 
     [ClientRpc]
@@ -100,8 +72,6 @@ public class PolePositionManager : NetworkBehaviour
         _uiManager.UpdateRaceRank(raceProgress);
 
     }
-
-
     public void AddPlayer(PlayerInfo player)
     {
         if (_players.Count < MaxPlayers)
