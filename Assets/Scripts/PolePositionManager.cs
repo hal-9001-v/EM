@@ -26,9 +26,6 @@ public class PolePositionManager : NetworkBehaviour
 
     private bool countDownStarted;
 
-    [SyncVar] public double startingTime;
-    [SyncVar] public double lapStartingTime;
-
     double threshHold;
 
     private void Awake()
@@ -244,7 +241,8 @@ public class PolePositionManager : NetworkBehaviour
             _players[i].CanMove = isActiveMovement;
         }
 
-        startingTime = _timer.GetCurrentServerTime();
-        lapStartingTime = startingTime;
+        _uiManager.myChangingPlayer.gameObject.GetComponent<PlayerController>()
+            .CmdSetRaceStartTime(_timer.GetCurrentServerTime());
+
     }
 }
