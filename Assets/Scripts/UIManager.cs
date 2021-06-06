@@ -12,7 +12,7 @@ public class UIManager : MonoBehaviour
     public bool showGUI = true;
 
     private MyNetworkManager m_NetworkManager;
-    private PolePositionManager _manager;
+    [SerializeField] private PolePositionManager _manager;
 
 
     #region GUIBUTTONS
@@ -93,7 +93,15 @@ public class UIManager : MonoBehaviour
 
     private void Update()
     {
-        textPosition.text = _manager.GetRaceProgress();
+        if (_manager == null)
+        {
+            _manager = FindObjectOfType<PolePositionManager>();
+        }
+        else
+        {
+            textPosition.text = _manager.GetRaceProgress();
+
+        }
     }
 
 
