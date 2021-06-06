@@ -16,11 +16,7 @@ public class UIManager : MonoBehaviour
 
     private Timer _timer;
     private double startingTime;
-    [HideInInspector] public SetupPlayer myChangingPlayer;
 
-    [Header("CountDown")] [SerializeField] private GameObject countDown;
-
-    [SerializeField] private TextMeshProUGUI numbersInCountDown;
 
     #region GUIBUTTONS
 
@@ -277,7 +273,6 @@ public class UIManager : MonoBehaviour
         inGameHUD.SetActive(true);
         countDown.SetActive(false);
         UpdateChat(true, false);
-        myChangingPlayer.RpcActivateMovement();
     }
 
     private void ActivatePersonalizationMenu()
@@ -326,7 +321,6 @@ public class UIManager : MonoBehaviour
 
     private void Play()
     {
-        NetworkClient.AddPlayer();
         //        myChangingPlayer.IsViewer = false;
         playerIsViewer = false; 
         NetworkClient.AddPlayer();

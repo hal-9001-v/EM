@@ -11,7 +11,7 @@ public class PolePositionManager : NetworkBehaviour
     const int MaxPlayers = 4;
     private MyNetworkManager _networkManager;
 
-    private List<PlayerInfo> _players = new List<PlayerInfo>();
+    public List<PlayerInfo> _players = new List<PlayerInfo>();
 
     private CircuitController _circuitController;
     private GameObject[] _debuggingSpheres;
@@ -23,7 +23,8 @@ public class PolePositionManager : NetworkBehaviour
     [SyncVar] private bool _isRaceInProgress;
 
     [SyncVar] public bool isActiveMovement = false;
-
+    [SyncVar (hook = nameof(HandleTimerUpdate))] public double _currentTime ;
+    public double myCurrentTime;
     [SyncVar] public bool arePlayersReady;
 
     private bool countDownStarted;
@@ -54,6 +55,43 @@ public class PolePositionManager : NetworkBehaviour
         {
             ArePlayersReady();
         }
+        
+        UIHandle();
+    }
+    
+    public void UIHandle(){
+
+        CmdUpdateTimer();
+
+    }
+
+    private void HandleTimerUpdate(double oldDouble, double newDouble){
+
+        myCurrentTime = newDouble;
+        _uiManager.UpdateLapTime(newDouble);
+        _uiManager.UpdateTotalTime(newDouble);
+
+    }
+
+    [Command]
+    public void CmdUpdateTimer(){
+
+        ServerUpdateTimer();
+
+    }
+
+    [Server]
+    public void ServerUpdateTimer(){
+
+        _currentTime = _timer.GetCurrentServerTime() - startingTime;
+        Debug.Log(_currentTime);
+
+    }
+
+    public double GetCurrentRaceTime(){
+
+        return _currentTime;
+
     }
 
     public void AddPlayer(PlayerInfo player)
@@ -191,7 +229,7 @@ public class PolePositionManager : NetworkBehaviour
 
     private IEnumerator CountDown2()
     {
-        yield return new WaitForSeconds(3f);
+        yield return new WaitForSeconds(5f);
         isActiveMovement = true;
         SetMovementToPlayers();
     }
@@ -212,6 +250,7 @@ public class PolePositionManager : NetworkBehaviour
         {
             _players[i].CanMove = isActiveMovement;
         }
+        startingTime = _timer.GetCurrentServerTime();
     }
     
 }

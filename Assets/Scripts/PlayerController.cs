@@ -508,17 +508,17 @@ public class PlayerController : NetworkBehaviour
 
     void DisplayNextCamera()
     {
-        if (mode == 1 && _polePositionManager.players.Count != 0)
+        if (mode == 1 && _polePositionManager._players.Count != 0)
         {
             _currentCamera++;
 
-            if (_currentCamera >= _polePositionManager.players.Count)
+            if (_currentCamera >= _polePositionManager._players.Count)
             {
                 _currentCamera = 0;
             }
 
             //_camera.m_Focus = _polePositionManager.PlayerTransforms[_currentCamera].gameObject;
-            FindObjectOfType<CameraController>().m_Focus = _polePositionManager.players[_currentCamera].transform;
+            FindObjectOfType<CameraController>().m_Focus = _polePositionManager._players[_currentCamera].transform;
 
         }
 
@@ -526,17 +526,17 @@ public class PlayerController : NetworkBehaviour
 
     void DisplayPreviousCamera()
     {
-        if (mode == 1 && _polePositionManager.players.Count != 0)
+        if (mode == 1 && _polePositionManager._players.Count != 0)
         {
             _currentCamera--;
 
             if (_currentCamera < 0)
             {
-                _currentCamera = _polePositionManager.players.Count - 1;
+                _currentCamera = _polePositionManager._players.Count - 1;
             }
 
             //_camera.m_Focus = _polePositionManager.PlayerTransforms[_currentCamera].gameObject;
-            FindObjectOfType<CameraController>().m_Focus = _polePositionManager.players[_currentCamera].transform;
+            FindObjectOfType<CameraController>().m_Focus = _polePositionManager._players[_currentCamera].transform;
 
 
         }
