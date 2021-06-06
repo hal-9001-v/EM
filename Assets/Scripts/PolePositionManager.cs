@@ -272,6 +272,12 @@ public class PolePositionManager : NetworkBehaviour
         }
 
 
+        _isRaceInProgress = false;
+        
+        _players.Clear();
+        _playersInRace.Clear();
+        _spectators.Clear();
+
     }
 
     [ClientRpc]
