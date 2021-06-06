@@ -271,6 +271,11 @@ public class PolePositionManager : NetworkBehaviour
             _playersInRace[i].CanMove = isActiveMovement;
         }
 
+        _isRaceInProgress = false;
+        
+        _players.Clear();
+        _playersInRace.Clear();
+        _spectators.Clear();
 
     }
 
