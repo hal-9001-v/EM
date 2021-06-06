@@ -11,7 +11,7 @@ public class UIManager : MonoBehaviour
 {
     public bool showGUI = true;
 
-    private MyNetworkManager m_NetworkManager;
+    public MyNetworkManager m_NetworkManager;
     [SerializeField] private PolePositionManager _manager;
 
     private Timer _timer;
@@ -324,13 +324,14 @@ public class UIManager : MonoBehaviour
 
     }
 
-    private void ActivatePlayMenu()
+    public void ActivatePlayMenu()
     {
         mainMenu.SetActive(false);
         playMenu.SetActive(true);
         personalizationMenu.SetActive(false);
         inGameHUD.SetActive(false);
         countDown.SetActive(false);
+        endRaceHUD.SetActive(false);
     }
 
     private void ActivateSpectateMenu()
@@ -364,8 +365,10 @@ public class UIManager : MonoBehaviour
         ActivateMainMenu();
         mainMenu.SetActive(false);
         endRaceHUD.SetActive(true);
-
+        warning.SetActive(false);
     }
+    
+    
 
     private void Play()
     {

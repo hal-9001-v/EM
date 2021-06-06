@@ -16,7 +16,7 @@ public class PolePositionManager : NetworkBehaviour
 
     private List<PlayerInfo> _players = new List<PlayerInfo>();
     public List<PlayerInfo> _playersInRace = new List<PlayerInfo>();
-    public SyncList<PlayerInfo> _spectators = new SyncList<PlayerInfo>();
+    private SyncList<PlayerInfo> _spectators = new SyncList<PlayerInfo>();
 
 
     private CircuitController _circuitController;
@@ -60,45 +60,29 @@ public class PolePositionManager : NetworkBehaviour
         {
             if (_isRaceInProgress)
             {
-
                 string raceProgress = GetRaceProgress();
 
                 _uiManager.UpdateRaceRank(raceProgress);
 
                 RpcUpdateRaceProgress(raceProgress);
-
             }
-            else { 
-            ArePlayersReady();}
-
+            else
+            {
+                ArePlayersReady();
+            }
         }
-
-        UpdateClientLists();
     }
 
     [ClientRpc]
     void RpcUpdateRaceProgress(string raceProgress)
     {
         _uiManager.UpdateRaceRank(raceProgress);
-
     }
 
 
     public void AddPlayer(PlayerInfo player)
     {
         _players.Add(player);
-
-    }
-
-
-
-    [Server]
-    public void UpdateClientLists()
-    {
-        foreach (var player in _playersInRace)
-        {
-            _spectators.Add(player);
-        }
     }
 
 
@@ -135,7 +119,6 @@ public class PolePositionManager : NetworkBehaviour
         // Update car arc-lengths
         float[] arcLengths = new float[MaxPlayers];
 
-        
 
         for (int i = 0; i < _playersInRace.Count; ++i)
         {
@@ -259,9 +242,9 @@ public class PolePositionManager : NetworkBehaviour
         {
             _playersInRace[i].CanMove = isActiveMovement;
         }
-                _uiManager.myChangingPlayer.gameObject.GetComponent<PlayerController>()
-            .CmdSetRaceStartTime(_timer.GetCurrentServerTime());
 
+        _uiManager.myChangingPlayer.gameObject.GetComponent<PlayerController>()
+            .CmdSetRaceStartTime(_timer.GetCurrentServerTime());
     }
 
 
@@ -270,27 +253,39 @@ public class PolePositionManager : NetworkBehaviour
     {
         isActiveMovement = false;
         RpcEndRace();
-        for (int i = 0; i < _playersInRace.Count; i++)
+        for (int i = 0; i < _players.Count; i++)
         {
-            _playersInRace[i].CanMove = isActiveMovement;
+            _players[i].OnDestroy();
         }
 
         _isRaceInProgress = false;
-        
+
         _players.Clear();
         _playersInRace.Clear();
         _spectators.Clear();
-
     }
 
     [ClientRpc]
     public void RpcEndRace()
     {
-        for (int i = 0; i < _playersInRace.Count; i++)
+        for (int i = 0; i < _players.Count; i++)
         {
-            _playersInRace[i].CanMove = isActiveMovement;
+            _players[i].OnDestroy();
         }
-        
+        _uiManager.ActivateEndHud();
 
+        StartCoroutine(RankingCountDown());
+
+        _players.Clear();
+        _playersInRace.Clear();
+        
+        
+    }
+
+    private IEnumerator RankingCountDown()
+    {
+        yield return new WaitForSeconds(7f);
+        
+        _uiManager.ActivatePlayMenu();
     }
 }

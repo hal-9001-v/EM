@@ -31,4 +31,9 @@ public class PlayerInfo : NetworkBehaviour
     {
         return Name;
     }
+    
+    public void OnDestroy()
+    {
+        Destroy(gameObject);
+    }
 }
