@@ -5411,6 +5411,8 @@ MonoBehaviour:
   textSpeed: {fileID: 5240730514382615282}
   textLaps: {fileID: 7877127320461906900}
   textPosition: {fileID: 5510653439194531046}
+  textTotalTime: {fileID: 8488027469576531882}
+  textLapTime: {fileID: 6956574230112460118}
   pauseHUD: {fileID: 6592558929000380288}
   resume: {fileID: 5474040518508571959}
   disconnect: {fileID: 9172122989265597010}
