@@ -86,38 +86,17 @@ public class PolePositionManager : NetworkBehaviour
 
     }
 
-    private class PlayerInfoComparer : Comparer<PlayerInfo>
-    {
-        float[] _arcLengths;
-
-        public PlayerInfoComparer(float[] arcLengths)
-        {
-            _arcLengths = arcLengths;
-        }
-
-        public override int Compare(PlayerInfo x, PlayerInfo y)
-        {
-            if (_arcLengths[x.ID] < _arcLengths[y.ID])
-                return 1;
-            else return -1;
-        }
-    }
-
     public string GetRaceProgress()
     {
         // Update car arc-lengths
         float[] arcLengths = new float[MaxPlayers];
 
-
-        for (int i = 0; i < players.Count; ++i)
+        for (int i = 0; i < players.Count; i++)
         {
-            if (players[i] != null)
-            {
-                arcLengths[i] = ComputeCarArcLength(i);
-            }
-        }
+            players[i].CurrentArc = ComputeCarArcLength(i);
 
-        players.Sort(new PlayerInfoComparer(arcLengths));
+        }
+        players.Sort((a, b) => b.CurrentArc.CompareTo(a.CurrentArc));
 
         string raceOrder = "";
         foreach (var player in players)
