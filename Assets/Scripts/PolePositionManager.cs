@@ -129,21 +129,34 @@ public class PolePositionManager : NetworkBehaviour
         }
     }
 
+    [Server]
     public string GetRaceProgress()
     {
         // Update car arc-lengths
         float[] arcLengths = new float[MaxPlayers];
 
+        
 
         for (int i = 0; i < _playersInRace.Count; ++i)
         {
             if (_playersInRace[i] != null)
             {
-                arcLengths[i] = ComputeCarArcLength(i);
+                _playersInRace[i].CurrentArc = ComputeCarArcLength(i);
             }
         }
 
-        _playersInRace.Sort(new PlayerInfoComparer(arcLengths));
+        _playersInRace.Sort((a, b) =>
+        {
+            if (a.CurrentLap != b.CurrentLap)
+
+            {
+                return b.CurrentLap.CompareTo(a.CurrentLap);
+            }
+            else
+            {
+                return b.CurrentArc.CompareTo(a.CurrentArc);
+            }
+        });
 
         string raceOrder = "";
         foreach (var player in _playersInRace)
