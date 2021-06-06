@@ -44,8 +44,12 @@ public class SetupPlayer : NetworkBehaviour
     {
         base.OnStartServer();        
         _id = NetworkServer.connections.Count - 1;
-        
-        _polePositionManager.AddPlayer(_playerInfo);
+
+        if (isServerOnly)
+        {
+            _polePositionManager.AddPlayer(_playerInfo);
+        }
+       
     }
 
     /// <summary>
@@ -261,7 +265,7 @@ public class SetupPlayer : NetworkBehaviour
     {
         _playerInfo.IsReady = true;
     }
-    
+
 
 
     #endregion
@@ -292,4 +296,6 @@ public class SetupPlayer : NetworkBehaviour
     }
 
     #endregion
+
+    
 }
