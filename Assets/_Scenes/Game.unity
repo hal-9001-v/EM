@@ -450,6 +450,9 @@ MonoBehaviour:
   syncMode: 0
   syncInterval: 0.1
   numPlayers: 0
+  isClientRaceInProgress: 0
+  isActiveMovement: 0
+  isActiveClientMovement: 0
 --- !u!4 &1839589614
 Transform:
   m_ObjectHideFlags: 0
@@ -1123,6 +1126,16 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 3010251750485384644, guid: 5c339809502a33749b546f6663bcfb75,
+        type: 3}
+      propertyPath: sceneId
+      value: 1466511029
+      objectReference: {fileID: 0}
+    - target: {fileID: 3010251750485384644, guid: 5c339809502a33749b546f6663bcfb75,
+        type: 3}
+      propertyPath: m_AssetId
+      value: 5c339809502a33749b546f6663bcfb75
+      objectReference: {fileID: 0}
     - target: {fileID: 6415909394017212769, guid: 5c339809502a33749b546f6663bcfb75,
         type: 3}
       propertyPath: m_Name
@@ -1181,11 +1194,6 @@ PrefabInstance:
     - target: {fileID: 6415909394017212771, guid: 5c339809502a33749b546f6663bcfb75,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6415909394493063714, guid: 5c339809502a33749b546f6663bcfb75,
-        type: 3}
-      propertyPath: m_LocalPosition.z
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []

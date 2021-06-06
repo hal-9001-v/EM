@@ -64,13 +64,18 @@ public class UIManager : MonoBehaviour
     [Header("Wrong Way Warning")] [SerializeField]
     private GameObject warning;
 
+
+    [Header("CountDown")] [SerializeField] private GameObject countDown;
+    [SerializeField] private TextMeshProUGUI numbersInCountDown;
+
+
+    [Header("Chat")] [SerializeField] private GameObject chatObject;
+    [SerializeField] private TextMeshProUGUI chat;
+    [SerializeField] private TMP_InputField chatInput;
+
     #endregion
 
     [HideInInspector] public SetupPlayer myChangingPlayer;
-
-    [Header("CountDown")] [SerializeField] private GameObject countDown;
-
-    [SerializeField] private TextMeshProUGUI numbersInCountDown;
 
     private void Awake()
     {
@@ -151,7 +156,7 @@ public class UIManager : MonoBehaviour
             myChangingPlayer.CmdSetDisplayName(_name.textComponent.text);
         }
     }
-    
+
     public void UpdateSpeed(int speed)
     {
         textSpeed.text = "Speed " + speed + " Km/h";
@@ -199,7 +204,7 @@ public class UIManager : MonoBehaviour
         playMenu.SetActive(false);
         inGameHUD.SetActive(true);
         countDown.SetActive(false);
-        
+
         myChangingPlayer.RpcActivateMovement();
     }
 
@@ -266,4 +271,23 @@ public class UIManager : MonoBehaviour
         MeshRenderer[] all = FindObjectsOfType<MeshRenderer>();
         foreach (MeshRenderer m in all) m.enabled = false;
     }
+
+    #region Chat
+
+    public GameObject GetChatObject()
+    {
+        return this.chatObject;
+    }
+
+    public TextMeshProUGUI GetChat()
+    {
+        return this.chat;
+    }
+
+    public TMP_InputField GetChatInput()
+    {
+        return this.chatInput;
+    }
+
+    #endregion
 }

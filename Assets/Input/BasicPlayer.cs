@@ -41,6 +41,14 @@ public class @BasicPlayer : IInputActionCollection, IDisposable
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """"
+                },
+                {
+                    ""name"": ""Send_Msg"",
+                    ""type"": ""Button"",
+                    ""id"": ""d235c8a1-781f-4a0c-9fe6-6e2088091821"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """"
                 }
             ],
             ""bindings"": [
@@ -175,6 +183,17 @@ public class @BasicPlayer : IInputActionCollection, IDisposable
                     ""action"": ""Pause"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""7e368439-5bf4-415c-b642-b12c20636151"",
+                    ""path"": ""<Keyboard>/enter"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Send_Msg"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -198,6 +217,7 @@ public class @BasicPlayer : IInputActionCollection, IDisposable
         m_PC_Move = m_PC.FindAction("Move", throwIfNotFound: true);
         m_PC_Brake = m_PC.FindAction("Brake", throwIfNotFound: true);
         m_PC_Pause = m_PC.FindAction("Pause", throwIfNotFound: true);
+        m_PC_Send_Msg = m_PC.FindAction("Send_Msg", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -250,6 +270,7 @@ public class @BasicPlayer : IInputActionCollection, IDisposable
     private readonly InputAction m_PC_Move;
     private readonly InputAction m_PC_Brake;
     private readonly InputAction m_PC_Pause;
+    private readonly InputAction m_PC_Send_Msg;
     public struct PCActions
     {
         private @BasicPlayer m_Wrapper;
@@ -257,6 +278,7 @@ public class @BasicPlayer : IInputActionCollection, IDisposable
         public InputAction @Move => m_Wrapper.m_PC_Move;
         public InputAction @Brake => m_Wrapper.m_PC_Brake;
         public InputAction @Pause => m_Wrapper.m_PC_Pause;
+        public InputAction @Send_Msg => m_Wrapper.m_PC_Send_Msg;
         public InputActionMap Get() { return m_Wrapper.m_PC; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -275,6 +297,9 @@ public class @BasicPlayer : IInputActionCollection, IDisposable
                 @Pause.started -= m_Wrapper.m_PCActionsCallbackInterface.OnPause;
                 @Pause.performed -= m_Wrapper.m_PCActionsCallbackInterface.OnPause;
                 @Pause.canceled -= m_Wrapper.m_PCActionsCallbackInterface.OnPause;
+                @Send_Msg.started -= m_Wrapper.m_PCActionsCallbackInterface.OnSend_Msg;
+                @Send_Msg.performed -= m_Wrapper.m_PCActionsCallbackInterface.OnSend_Msg;
+                @Send_Msg.canceled -= m_Wrapper.m_PCActionsCallbackInterface.OnSend_Msg;
             }
             m_Wrapper.m_PCActionsCallbackInterface = instance;
             if (instance != null)
@@ -288,6 +313,9 @@ public class @BasicPlayer : IInputActionCollection, IDisposable
                 @Pause.started += instance.OnPause;
                 @Pause.performed += instance.OnPause;
                 @Pause.canceled += instance.OnPause;
+                @Send_Msg.started += instance.OnSend_Msg;
+                @Send_Msg.performed += instance.OnSend_Msg;
+                @Send_Msg.canceled += instance.OnSend_Msg;
             }
         }
     }
@@ -306,5 +334,6 @@ public class @BasicPlayer : IInputActionCollection, IDisposable
         void OnMove(InputAction.CallbackContext context);
         void OnBrake(InputAction.CallbackContext context);
         void OnPause(InputAction.CallbackContext context);
+        void OnSend_Msg(InputAction.CallbackContext context);
     }
 }
