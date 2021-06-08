@@ -139,7 +139,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &152685679
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -419,11 +419,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   syncMode: 0
   syncInterval: 0.1
-  numPlayers: 0
-  _players: []
+  MaxLaps: 2
+  _playersInRace: []
   isActiveMovement: 0
-  _currentTime: 0
-  myCurrentTime: 0
   arePlayersReady: 0
 --- !u!4 &1839589614
 Transform:
@@ -852,7 +850,8 @@ MonoBehaviour:
     type: 3}
   autoCreatePlayer: 0
   playerSpawnMethod: 1
-  spawnPrefabs: []
+  spawnPrefabs:
+  - {fileID: 1508097745644926054, guid: 8cb0f194315f5874797b12dac7f6cdfb, type: 3}
 --- !u!4 &2140735093
 Transform:
   m_ObjectHideFlags: 0

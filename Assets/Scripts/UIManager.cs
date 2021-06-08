@@ -156,7 +156,10 @@ public class UIManager : MonoBehaviour
         ready.gameObject.GetComponent<Image>().color = Color.green;
         if (myChangingPlayer != null)
         {
-            myChangingPlayer.CmdSetDisplayName(_name.textComponent.text);
+            if (_name.textComponent.text == null) {
+                myChangingPlayer.CmdSetDisplayName(_name.textComponent.text);
+            }
+            
         }
     }
 
@@ -373,14 +376,16 @@ public class UIManager : MonoBehaviour
         playerIsViewer = false;
         NetworkClient.AddPlayer();
         ActivatePersonalizationMenu();
+        Debug.Log("FUCK ME");
     }
 
     private void Spectate()
     {
         playerIsViewer = true;
         NetworkClient.AddPlayer();
-        //      myChangingPlayer.IsViewer = true;
+        //myChangingPlayer.IsViewer = true;
         ActivateSpectateMenu();
+
         
     }
 

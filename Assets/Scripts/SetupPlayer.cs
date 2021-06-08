@@ -10,8 +10,8 @@ using Random = System.Random;
 */
 
 public class SetupPlayer : NetworkBehaviour
-{   
-    
+{
+
     [SyncVar] private int _id;
 
     [SyncVar(hook = nameof(HandleDisplayNameUpdated))]
@@ -42,9 +42,9 @@ public class SetupPlayer : NetworkBehaviour
     /// </summary>
     public override void OnStartServer()
     {
-        base.OnStartServer();        
+        base.OnStartServer();
         _id = NetworkServer.connections.Count - 1;
-        
+
         _polePositionManager.AddPlayer(_playerInfo);
     }
 
@@ -55,25 +55,30 @@ public class SetupPlayer : NetworkBehaviour
     public override void OnStartClient()
     {
         base.OnStartClient();
-        _playerInfo.ID = _id;
-        int aux = _id + 1;
-        _playerInfo.Name = "Player " + aux;
-        _playerInfo.CurrentColor = new Color(0.91f,0.33f,0.33f,1);
-        _playerInfo.CurrentLap = 0;
-        _playerInfo.IsReady = false;
-        _playerInfo.CanMove = false;
-        
-        if (_uiManager.playerIsViewer)
+
+        if (isClient)
         {
-            _playerInfo.IsViewer = true;
+            _playerInfo.ID = _id;
+            int aux = _id + 1;
+            _playerInfo.Name = "Player " + aux;
+            _playerInfo.CurrentColor = new Color(0.91f, 0.33f, 0.33f, 1);
+            _playerInfo.CurrentLap = 0;
+            _playerInfo.IsReady = false;
+            _playerInfo.CanMove = false;
+
+            if (_uiManager.playerIsViewer)
+            {
+                _playerInfo.IsViewer = true;
+            }
+            else
+            {
+                _playerInfo.IsViewer = false;
+
+                CmdAddPlayerInRace(_playerInfo);
+            }
+            //_polePositionManager.AddPlayer(_playerInfo);
         }
-        else
-        {
-            _playerInfo.IsViewer = false;
-        
-            CmdAddPlayerInRace(_playerInfo);    
-        }
-        _polePositionManager.AddPlayer(_playerInfo);
+
     }
 
     [Command]
@@ -94,7 +99,7 @@ public class SetupPlayer : NetworkBehaviour
     {
         _polePositionManager._playersInRace.Add(playerInfo);
     }
-    
+
 
 
     /// <summary>
@@ -103,12 +108,15 @@ public class SetupPlayer : NetworkBehaviour
     /// </summary>
     public override void OnStartLocalPlayer()
     {
-        CmdSetDisplayName(_playerInfo.Name);
-        CmdSetColor(_playerInfo.CurrentColor);
-        InitializeInput();
-        _playerController.InitializeInput(_input);
+        if (isClientOnly)
+        {
+            CmdSetDisplayName(_playerInfo.Name);
+            CmdSetColor(_playerInfo.CurrentColor);
+            InitializeInput();
+            _playerController.InitializeInput(_input);
 
-        
+
+        }
     }
 
     /// <summary>Stop event, only called on client and host.</summary>
@@ -121,19 +129,21 @@ public class SetupPlayer : NetworkBehaviour
 
     private BasicPlayer _input;
 
-    private void InitializeInput(){
+    private void InitializeInput()
+    {
 
-            _input = new BasicPlayer();
+        _input = new BasicPlayer();
 
-            _input.PC.Pause.performed += ctx =>
-            {
-                _uiManager.Pause();
+        _input.PC.Pause.performed += ctx =>
+        {
+            _uiManager.Pause();
 
-            };
-            _input.Enable();
+        };
+        _input.Enable();
     }
 
-    public PlayerInfo GetPlayerInfo(){
+    public PlayerInfo GetPlayerInfo()
+    {
 
         return _playerInfo;
 
@@ -155,7 +165,7 @@ public class SetupPlayer : NetworkBehaviour
         Destroy(gameObject);
         NetworkManager.singleton.StopClient();
     }
-    
+
     // Start is called before the first frame update
     void Start()
     {
@@ -177,8 +187,8 @@ public class SetupPlayer : NetworkBehaviour
         Debug.Log("Color Cambiado");
         _meshRenderer.materials[1].color = newColor;
         _nameText.color = newColor;
-        _playerInfo.CurrentColor = newColor;    
-        }
+        _playerInfo.CurrentColor = newColor;
+    }
 
     void HandleDisplayNameUpdated(string oldName, string newName)
     {
@@ -192,8 +202,8 @@ public class SetupPlayer : NetworkBehaviour
         Debug.Log("[CLIENT] Número de jugadores en el Lobby -> " + message.client_numberPlayers);
         SetNumberPlayer(message.client_numberPlayers);
     }
-    
- 
+
+
     private int numPlayers;
     public int GetCLientNumberPlayers()
     {
@@ -209,7 +219,7 @@ public class SetupPlayer : NetworkBehaviour
     public void SetDisplayName(string newName)
     {
         int aux = _id + 1;
-        if (newName.Length < 2 || newName.Length > 14)  _name = "Player " + aux;
+        if (newName.Length < 2 || newName.Length > 14) _name = "Player " + aux;
         else _name = newName;
     }
 
@@ -247,20 +257,20 @@ public class SetupPlayer : NetworkBehaviour
         SetReady();
         _playerInfo.IsReady = true;
     }
-    
+
     [Server]
     public void SetReady()
     {
         _playerInfo.IsReady = true;
     }
-    
+
 
 
     #endregion
 
     void OnSpeedChangeEventHandler(float speed)
     {
-        _uiManager.UpdateSpeed((int) speed * 5); // 5 for visualization purpose (km/h)
+        _uiManager.UpdateSpeed((int)speed * 5); // 5 for visualization purpose (km/h)
     }
 
     void ConfigureCamera()
